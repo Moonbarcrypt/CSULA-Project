@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Device</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; }
+        .container { padding: 20px; }
+        nav { background-color: #333; padding: 1em; margin-bottom: 1em; }
+        nav ul { list-style-type: none; margin: 0; padding: 0; display: flex; }
+        nav ul li { margin-right: 20px; }
+        nav ul li a { color: white; text-decoration: none; }
+        nav ul li a:hover { text-decoration: underline; }
+        .flash-message { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .flash-message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    {% include 'base_navbar.html' %} 
+
+    <div class="container">
+        <h1>Edit Device</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if error %}
+            <p class="flash-message error">{{ error }}</p>
+        {% endif %}
+
+        <form action="{{ url_for('edit_device', device_id=device.id) }}" method="post">
+            <label for="user_name">User Name:</label><br>
+            <input type="text" id="user_name" name="user_name" value="{{ device.user_name }}" required><br><br>
+
+            <label for="device_name">Device Name:</label><br>
+            <input type="text" id="device_name" name="device_name" value="{{ device.device_name }}" required><br><br>
+            
+            {# MAC Address input field is REMOVED - it's generated on creation and not editable here #}
+
+            <button type="submit">Update Device</button>
+        </form>
+        <br>
+        <a href="{{ url_for('whitelist') }}">Back to Whitelist</a>
+    </div>
+</body>
+</html>
