@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Network Scan & Unregistered Devices</title>
+    <title>Network Scan & Intrusion Detection</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -157,16 +157,16 @@
             border-radius: 4px;
             font-family: 'Courier New', monospace; 
             font-size: 1.1em;
-            display: flex; /* Use flexbox for MAC and button */
-            justify-content: space-between; /* Space out items */
-            align-items: center; /* Vertically align items */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
         }
         .unregistered-section li .mac-address {
-            flex-grow: 1; /* Allow MAC address to take available space */
-            text-align: left; /* Align MAC address to the left */
+            flex-grow: 1; 
+            text-align: left; 
         }
-        .unregistered-section li .quarantine-button {
-            background-color: #dc3545; /* Red for quarantine */
+        .unregistered-section li .watchlist-button { 
+            background-color: #dc3545; /* Red for "Add to Watchlist" */
             color: white;
             padding: 8px 15px;
             border: none;
@@ -175,33 +175,33 @@
             font-size: 0.9em;
             transition: background-color 0.2s ease;
         }
-        .unregistered-section li .quarantine-button:hover {
-            background-color: #c82333; /* Darker red on hover */
+        .unregistered-section li .watchlist-button:hover { 
+            background-color: #c82333; 
         }
-        .unregistered-section li .quarantine-button:disabled {
+        .unregistered-section li .watchlist-button:disabled { 
             background-color: #cccccc;
             cursor: not-allowed;
         }
 
-        /* Quarantined Devices Section */
-        .quarantined-section {
-            background-color: #e0e0e0; /* Light gray for quarantined */
-            border: 1px solid #bdbdbd; /* Gray border */
-            color: #424242; /* Dark gray text */
-            margin-top: 30px; /* Space from unregistered section */
+        /* Watchlisted Devices Section */ 
+        .watchlisted-section { 
+            background-color: #e0e0e0; 
+            border: 1px solid #bdbdbd; 
+            color: #424242; 
+            margin-top: 30px; 
         }
-        .quarantined-section h2 {
+        .watchlisted-section h2 { 
             color: #424242;
             text-align: center;
         }
-        .quarantined-section ul {
+        .watchlisted-section ul { 
             list-style-type: none;
             margin-left: 0;
             padding-left: 0;
             text-align: center;
         }
-        .quarantined-section li {
-            background-color: #eeeeee; /* Lighter gray for list items */
+        .watchlisted-section li { 
+            background-color: #eeeeee; 
             border: 1px solid #d0d0d0;
             padding: 10px;
             margin-bottom: 8px;
@@ -212,12 +212,12 @@
             justify-content: space-between;
             align-items: center;
         }
-        .quarantined-section li .mac-address {
+        .watchlisted-section li .mac-address { 
             flex-grow: 1;
             text-align: left;
         }
-        .quarantined-section li .unquarantine-button {
-            background-color: #007bff; /* Blue for unquarantine */
+        .watchlisted-section li .unwatchlist-button { 
+            background-color: #007bff; /* Blue for "Remove from Watchlist" */
             color: white;
             padding: 8px 15px;
             border: none;
@@ -226,25 +226,25 @@
             font-size: 0.9em;
             transition: background-color 0.2s ease;
         }
-        .quarantined-section li .unquarantine-button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
+        .watchlisted-section li .unwatchlist-button:hover { 
+            background-color: #0056b3; 
         }
-        .quarantined-section li .unquarantine-button:disabled {
+        .watchlisted-section li .unwatchlist-button:disabled { 
             background-color: #cccccc;
             cursor: not-allowed;
         }
         
         /* Safe State */
         .results-section.safe {
-            background-color: #d4edda; /* Light green background */
-            border-color: #c3e6cb; /* Green border */
-            color: #155724; /* Dark green text */
+            background-color: #d4edda; 
+            border-color: #c3e6cb; 
+            color: #155724; 
         }
         .results-section.safe h2 {
-            color: #155724; /* Green for safe */
+            color: #155724; 
         }
         .results-section.safe li {
-            background-color: #e2f0e7; /* Lighter green for safe list items */
+            background-color: #e2f0e7; 
             border-color: #d0e9c6;
         }
 
@@ -255,18 +255,18 @@
             .results-section { padding: 15px; margin: 20px auto; }
             .results-section h2 { font-size: 1.5em; }
             .scan-button { padding: 12px 25px; font-size: 1em; }
-            .unregistered-section li, .quarantined-section li {
+            .unregistered-section li, .watchlisted-section li { 
                 flex-direction: column;
                 align-items: flex-start;
                 padding: 10px;
             }
-            .unregistered-section li .mac-address, .quarantined-section li .mac-address {
+            .unregistered-section li .mac-address, .watchlisted-section li .mac-address { 
                 text-align: left;
                 margin-bottom: 8px;
-                width: 100%; /* Take full width */
+                width: 100%; 
             }
-            .unregistered-section li .quarantine-button, .quarantined-section li .unquarantine-button {
-                width: 100%; /* Full width buttons */
+            .unregistered-section li .watchlist-button, .watchlisted-section li .unwatchlist-button { 
+                width: 100%; 
             }
         }
     </style>
@@ -276,7 +276,7 @@
 
     <div class="container">
         <h1>Network Scan & Intrusion Detection</h1>
-        <p>Click the button below to perform a simulated scan of your network and identify any unregistered devices. You can then choose to "quarantine" them.</p>
+        <p>Click the button below to perform a simulated scan of your network and identify any unregistered devices. You can then add them to a "Watchlist" for monitoring.</p>
 
         <button id="scanButton" class="scan-button">
             <span id="buttonText">Perform Network Scan</span>
@@ -293,23 +293,23 @@
             <ul id="unregisteredMacList">
                 {# Unregistered MACs will be injected here by JavaScript #}
             </ul>
-            <p>You can "Quarantine" these devices to simulate blocking their internet access.</p>
+            <p>You can "Add to Watchlist" these devices to monitor them for suspicious activity.</p>
         </div>
 
-        {# Section for Quarantined Devices #}
-        <div id="quarantinedResults" class="results-section quarantined-section" style="display: none;">
-            <h2>🚫 Quarantined Devices</h2>
-            <p>The following devices have been "quarantined" (simulated internet access blocked):</p>
-            <ul id="quarantinedMacList">
-                {# Quarantined MACs will be injected here by JavaScript #}
+        {# Section for Watchlisted Devices #}
+        <div id="watchlistedResults" class="results-section watchlisted-section" style="display: none;">
+            <h2>🕵️‍♂️ Watchlisted Devices</h2>
+            <p>The following devices are currently on your watchlist for monitoring:</p>
+            <ul id="watchlistedMacList">
+                {# Watchlisted MACs will be injected here by JavaScript #}
             </ul>
-            <p>Register a quarantined device to automatically unquarantine it.</p>
+            <p>Register a watchlisted device to automatically remove it from the watchlist, or manually remove it below.</p>
         </div>
 
         {# Message when network is clean #}
         <div id="networkCleanMessage" class="results-section safe" style="display: none;">
             <h2>✅ Network Clean!</h2>
-            <p>All detected devices on your network appear to be whitelisted or already quarantined. No new unauthorized devices found.</p>
+            <p>All detected devices on your network appear to be whitelisted or already on the watchlist. No new unauthorized devices found.</p>
         </div>
 
         <div class="link-group">
@@ -330,59 +330,59 @@
             const loadingIndicator = document.getElementById('loadingIndicator');
             const unregisteredResults = document.getElementById('unregisteredResults');
             const unregisteredMacList = document.getElementById('unregisteredMacList');
-            const quarantinedResults = document.getElementById('quarantinedResults');
-            const quarantinedMacList = document.getElementById('quarantinedMacList');
+            const watchlistedResults = document.getElementById('watchlistedResults'); 
+            const watchlistedMacList = document.getElementById('watchlistedMacList'); 
             const networkCleanMessage = document.getElementById('networkCleanMessage');
 
             // Function to render the results sections
             async function renderScanResults() {
                 // Hide all result sections initially
                 unregisteredResults.style.display = 'none';
-                quarantinedResults.style.display = 'none';
+                watchlistedResults.style.display = 'none'; 
                 networkCleanMessage.style.display = 'none';
 
                 try {
                     const response = await fetch('/api/scan_network');
                     const data = await response.json();
                     const unregisteredMacs = data.unregistered_macs;
-                    const quarantinedMacs = data.quarantined_macs;
+                    const watchlistedMacs = data.watchlisted_macs; 
 
                     // Render Unregistered Devices
-                    unregisteredMacList.innerHTML = ''; // Clear previous list
+                    unregisteredMacList.innerHTML = ''; 
                     if (unregisteredMacs && unregisteredMacs.length > 0) {
                         unregisteredMacs.forEach(mac => {
                             const listItem = document.createElement('li');
                             listItem.innerHTML = `
                                 <span class="mac-address">${mac}</span>
-                                <button class="quarantine-button" data-mac="${mac}">Quarantine</button>
+                                <button class="watchlist-button" data-mac="${mac}">Add to Watchlist</button>
                             `;
                             unregisteredMacList.appendChild(listItem);
                         });
                         unregisteredResults.style.display = 'block';
                     }
 
-                    // Render Quarantined Devices
-                    quarantinedMacList.innerHTML = ''; // Clear previous list
-                    if (quarantinedMacs && quarantinedMacs.length > 0) {
-                        quarantinedMacs.forEach(mac => {
+                    // Render Watchlisted Devices
+                    watchlistedMacList.innerHTML = ''; 
+                    if (watchlistedMacs && watchlistedMacs.length > 0) { 
+                        watchlistedMacs.forEach(mac => { 
                             const listItem = document.createElement('li');
                             listItem.innerHTML = `
                                 <span class="mac-address">${mac}</span>
-                                {# Unquarantine button is not needed here as registration handles it, but could be added for manual unquarantine #}
+                                <button class="unwatchlist-button" data-mac="${mac}">Remove from Watchlist</button>
                             `;
-                            quarantinedMacList.appendChild(listItem);
+                            watchlistedMacList.appendChild(listItem); 
                         });
-                        quarantinedResults.style.display = 'block';
+                        watchlistedResults.style.display = 'block'; 
                     }
 
-                    // Show network clean message if no unregistered and no quarantined
-                    if (unregisteredMacs.length === 0 && quarantinedMacs.length === 0) {
+                    // Show network clean message if no unregistered and no watchlisted
+                    if (unregisteredMacs.length === 0 && watchlistedMacs.length === 0) { 
                         networkCleanMessage.style.display = 'block';
-                    } else if (unregisteredMacs.length === 0 && quarantinedMacs.length > 0) {
-                        // If only quarantined devices exist, show quarantined section and a modified clean message
+                    } else if (unregisteredMacs.length === 0 && watchlistedMacs.length > 0) { 
+                        // If only watchlisted devices exist, show watchlisted section and a modified clean message
                         networkCleanMessage.style.display = 'block';
-                        networkCleanMessage.querySelector('h2').textContent = '✅ Network Clean! (Some devices are quarantined)';
-                        networkCleanMessage.querySelector('p').textContent = 'All detected devices are either whitelisted or have been quarantined.';
+                        networkCleanMessage.querySelector('h2').textContent = '✅ Network Clean! (Some devices are on watchlist)';
+                        networkCleanMessage.querySelector('p').textContent = 'All detected devices are either whitelisted or are currently being monitored.';
                     }
 
 
@@ -406,9 +406,9 @@
                 
                 // Clear previous results immediately
                 unregisteredMacList.innerHTML = '';
-                quarantinedMacList.innerHTML = '';
+                watchlistedMacList.innerHTML = ''; 
                 unregisteredResults.style.display = 'none';
-                quarantinedResults.style.display = 'none';
+                watchlistedResults.style.display = 'none'; 
                 networkCleanMessage.style.display = 'none';
 
                 try {
@@ -433,47 +433,79 @@
                 }
             });
 
-            // Event delegation for quarantine buttons
-            // Listen for clicks on the unregisteredMacList and check if it's a quarantine button
+            // Event delegation for "Add to Watchlist" buttons
             unregisteredMacList.addEventListener('click', async function(event) {
-                if (event.target.classList.contains('quarantine-button')) {
+                if (event.target.classList.contains('watchlist-button')) { 
                     const button = event.target;
-                    const macToQuarantine = button.dataset.mac;
+                    const macToWatchlist = button.dataset.mac; 
                     
-                    button.disabled = true; // Disable button immediately
-                    button.textContent = 'Blocking...';
+                    button.disabled = true; 
+                    button.textContent = 'Adding...'; 
 
                     try {
-                        const response = await fetch('/api/quarantine_device', {
+                        const response = await fetch('/api/add_to_watchlist', { 
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ mac_address: macToQuarantine }),
+                            body: JSON.stringify({ mac_address: macToWatchlist }), 
                         });
                         const result = await response.json();
 
                         if (result.success) {
                             console.log(result.message);
-                            // Re-render the scan results to update the lists
                             await renderScanResults(); 
                         } else {
-                            console.error('Failed to quarantine:', result.message);
-                            alert('Failed to quarantine device: ' + result.message); // Use alert for quick feedback
+                            console.error('Failed to add to watchlist:', result.message); 
+                            alert('Failed to add device to watchlist: ' + result.message); 
                         }
                     } catch (error) {
-                        console.error('Network error during quarantine:', error);
-                        alert('Network error during quarantine. See console for details.');
+                        console.error('Network error during watchlist addition:', error); 
+                        alert('Network error during watchlist addition. See console for details.'); 
                     } finally {
-                        button.disabled = false; // Re-enable in case of error
-                        button.textContent = 'Quarantine';
+                        button.disabled = false; 
+                        button.textContent = 'Add to Watchlist'; 
                     }
                 }
             });
 
-            // Initial scan when the page loads
-            // This will show the current state without needing to click "Scan" first
-            // You can remove this if you strictly want the user to always click scan first
+            // Event delegation for "Remove from Watchlist" buttons
+            watchlistedMacList.addEventListener('click', async function(event) { 
+                if (event.target.classList.contains('unwatchlist-button')) { 
+                    const button = event.target;
+                    const macToRemove = button.dataset.mac; 
+                    
+                    button.disabled = true; 
+                    button.textContent = 'Removing...'; 
+
+                    try {
+                        const response = await fetch('/api/remove_from_watchlist', { 
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ mac_address: macToRemove }), 
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            console.log(result.message);
+                            await renderScanResults(); 
+                        } else {
+                            console.error('Failed to remove from watchlist:', result.message); 
+                            alert('Failed to remove device from watchlist: ' + result.message); 
+                        }
+                    } catch (error) {
+                        console.error('Network error during watchlist removal:', error); 
+                        alert('Network error during watchlist removal. See console for details.'); 
+                    } finally {
+                        button.disabled = false; 
+                        button.textContent = 'Remove from Watchlist'; 
+                    }
+                }
+            });
+
+            // Initial scan when the page loads (optional, can be removed if you always want user to click scan)
             // renderScanResults(); 
         });
     </script>
