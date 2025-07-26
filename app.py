@@ -34,13 +34,16 @@ class Device(db.Model):
     def __repr__(self):
         return f"Device('{self.user_name}', '{self.assigned_number}', '{self.device_name}', '{self.encrypted_device_name}', '{self.mac_address}')"
 
-# NEW MODEL: Defines the 'quarantined_device' table structure
-class QuarantinedDevice(db.Model):
+# RENAMED MODEL: Defines the 'watchlisted_device' table structure
+class WatchlistedDevice(db.Model):
+    # Explicitly set table name to avoid issues if class name was QuarantinedDevice before
+    __tablename__ = 'watchlisted_device' 
     id = db.Column(db.Integer, primary_key=True)
+    # Stores the MAC address of the device that has been "watchlisted"
     mac_address = db.Column(db.String(17), unique=True, nullable=False)
 
     def __repr__(self):
-        return f"QuarantinedDevice('{self.mac_address}')"
+        return f"WatchlistedDevice('{self.mac_address}')"
 
 
 # --- Helper Function for Number Assignment ---
@@ -78,7 +81,6 @@ def get_network_mac_addresses():
     # To make the demo more dynamic, let's also add some MACs from currently
     # registered devices to the 'detected' list, so the "unregistered" list
     # only shows truly new ones.
-    # We'll fetch existing MACs from the DB later in the /api/scan_network route.
     
     return detected_macs
 
@@ -99,7 +101,6 @@ def register():
 def register_device():
     user_name = request.form.get('user_name') 
     device_name = request.form.get('device_name')
-    # Re-enable MAC address input from form for demo purposes
     mac_address = request.form.get('mac_address') 
 
     # Validate MAC address format (simple check)
@@ -109,7 +110,6 @@ def register_device():
             flash('Invalid MAC address format. Please use XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX.', 'error')
             return render_template('register.html', error="Invalid MAC address format.")
     else:
-        # If MAC is not provided, generate a random one (fallback)
         mac_address = generate_random_mac()
         while Device.query.filter_by(mac_address=mac_address).first():
             mac_address = generate_random_mac()
@@ -117,7 +117,6 @@ def register_device():
 
     if user_name and device_name:
         try:
-            # Check if MAC address already exists in DB (for manual input)
             existing_mac = Device.query.filter_by(mac_address=mac_address).first()
             if existing_mac:
                 flash(f'Device with MAC address {mac_address} is already registered.', 'error')
@@ -137,12 +136,12 @@ def register_device():
             db.session.add(new_device)
             db.session.commit()
 
-            # NEW LOGIC: If this device was previously quarantined, unquarantine it
-            quarantined_entry = QuarantinedDevice.query.filter_by(mac_address=mac_address).first()
-            if quarantined_entry:
-                db.session.delete(quarantined_entry)
+            # LOGIC: If this device was previously watchlisted, remove it from watchlist
+            watchlisted_entry = WatchlistedDevice.query.filter_by(mac_address=mac_address).first()
+            if watchlisted_entry:
+                db.session.delete(watchlisted_entry)
                 db.session.commit()
-                flash(f'Device {device_name} registered and unquarantined successfully!', 'success')
+                flash(f'Device {device_name} registered and removed from watchlist successfully!', 'success')
             else:
                 flash('Device registered successfully!', 'success') 
             
@@ -174,7 +173,7 @@ def network_scan_page():
 @app.route('/api/scan_network', methods=['GET'])
 def api_scan_network():
     registered_macs = {d.mac_address for d in Device.query.all()}
-    quarantined_macs_db = {q.mac_address for q in QuarantinedDevice.query.all()} 
+    watchlisted_macs_db = {q.mac_address for q in WatchlistedDevice.query.all()} # Get currently watchlisted MACs
     
     detected_macs = get_network_mac_addresses()
     
@@ -183,53 +182,56 @@ def api_scan_network():
     if num_to_add > 0:
         detected_macs.update(random.sample(list(registered_macs), num_to_add))
 
-    unregistered_macs = detected_macs - registered_macs - quarantined_macs_db
+    # Filter detected_macs: exclude registered ones and already watchlisted ones
+    unregistered_macs = detected_macs - registered_macs - watchlisted_macs_db
 
+    # Return the list of unregistered MACs as JSON, and also watchlisted MACs
     return jsonify(
         unregistered_macs=list(unregistered_macs),
-        quarantined_macs=list(quarantined_macs_db)
+        watchlisted_macs=list(watchlisted_macs_db)
     )
 
-# API ROUTE: To quarantine a device
-@app.route('/api/quarantine_device', methods=['POST'])
-def api_quarantine_device():
+# NEW API ROUTE: To add a device to watchlist
+@app.route('/api/add_to_watchlist', methods=['POST'])
+def api_add_to_watchlist():
     mac_address = request.json.get('mac_address')
     if not mac_address:
         return jsonify(success=False, message="MAC address is required."), 400
 
     try:
-        if QuarantinedDevice.query.filter_by(mac_address=mac_address).first():
-            return jsonify(success=False, message=f"MAC {mac_address} is already quarantined."), 409 
+        # Check if already watchlisted
+        if WatchlistedDevice.query.filter_by(mac_address=mac_address).first():
+            return jsonify(success=False, message=f"MAC {mac_address} is already on the watchlist."), 409 
 
-        new_quarantined = QuarantinedDevice(mac_address=mac_address)
-        db.session.add(new_quarantined)
+        # Add to watchlisted devices
+        new_watchlisted = WatchlistedDevice(mac_address=mac_address)
+        db.session.add(new_watchlisted)
         db.session.commit()
-        return jsonify(success=True, message=f"MAC {mac_address} quarantined successfully!")
+        return jsonify(success=True, message=f"MAC {mac_address} added to watchlist successfully!")
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error quarantining MAC {mac_address}: {e}")
-        return jsonify(success=False, message="An error occurred during quarantine."), 500
+        app.logger.error(f"Error adding MAC {mac_address} to watchlist: {e}")
+        return jsonify(success=False, message="An error occurred while adding to watchlist."), 500
 
-# API ROUTE: To unquarantine a device (if needed manually, though registration handles it)
-# This route is now explicitly added for manual unquarantine from the network scan page
-@app.route('/api/unquarantine_device', methods=['POST'])
-def api_unquarantine_device():
+# NEW API ROUTE: To remove a device from watchlist
+@app.route('/api/remove_from_watchlist', methods=['POST'])
+def api_remove_from_watchlist():
     mac_address = request.json.get('mac_address')
     if not mac_address:
         return jsonify(success=False, message="MAC address is required."), 400
 
     try:
-        quarantined_entry = QuarantinedDevice.query.filter_by(mac_address=mac_address).first()
-        if quarantined_entry:
-            db.session.delete(quarantined_entry)
+        watchlisted_entry = WatchlistedDevice.query.filter_by(mac_address=mac_address).first()
+        if watchlisted_entry:
+            db.session.delete(watchlisted_entry)
             db.session.commit()
-            return jsonify(success=True, message=f"MAC {mac_address} unquarantined successfully!")
+            return jsonify(success=True, message=f"MAC {mac_address} removed from watchlist successfully!")
         else:
-            return jsonify(success=False, message=f"MAC {mac_address} not found in quarantine list."), 404
+            return jsonify(success=False, message=f"MAC {mac_address} not found on watchlist."), 404
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error unquarantining MAC {mac_address}: {e}")
-        return jsonify(success=False, message="An error occurred during unquarantine."), 500
+        app.logger.error(f"Error removing MAC {mac_address} from watchlist: {e}")
+        return jsonify(success=False, message="An error occurred while removing from watchlist."), 500
 
 
 # Handles deletion of a specific device (POST request)
@@ -249,7 +251,10 @@ def delete_device(device_id):
 # Handles displaying and processing the form for editing a specific device
 @app.route('/edit/<int:device_id>', methods=['GET', 'POST'])
 def edit_device(device_id):
-    device = Device.query.get_or_404(device_id) 
+    device = db.session.get(Device, device_id) # Use db.session.get for primary key lookup
+    if device is None:
+        flash('Device not found.', 'error')
+        return redirect(url_for('whitelist'))
 
     if request.method == 'POST':
         user_name = request.form['user_name'].strip()
@@ -303,7 +308,7 @@ if __name__ == '__main__':
                     try:
                         encrypted_name_dummy = simulate_encrypt(data['device_name'])
                         
-                        existing_device = Device.query.filter_by(assigned_number=data['assigned_number']).first()
+                        existing_device = Device.query.filter_by(mac_address=data['mac_address']).first() # Check by MAC for uniqueness
                         if not existing_device:
                             device = Device(
                                 user_name=data['user_name'], 
@@ -314,13 +319,13 @@ if __name__ == '__main__':
                             )
                             db.session.add(device)
                         else:
-                            print(f"Skipping dummy device {data['assigned_number']} as it already exists.")
+                            print(f"Skipping dummy device with MAC {data['mac_address']} as it already exists.")
                     except IntegrityError:
                         db.session.rollback()
-                        print(f"IntegrityError: Device with assigned number {data['assigned_number']} or MAC {data['mac_address']} already exists. Rolling back.")
+                        print(f"IntegrityError: Device with MAC {data['mac_address']} already exists. Rolling back.")
                     except Exception as e:
                         db.session.rollback()
-                        print(f"Error adding dummy device {data['assigned_number']}: {e}")
+                        print(f"Error adding dummy device with MAC {data['mac_address']}: {e}")
             
                 try:
                     db.session.commit()
@@ -335,4 +340,3 @@ if __name__ == '__main__':
 
     # Run the Flask development server
     app.run(debug=True)
-
