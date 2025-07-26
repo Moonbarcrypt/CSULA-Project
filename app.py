@@ -1,11 +1,11 @@
 # Import necessary modules from Flask and Flask-SQLAlchemy
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify 
 from flask_sqlalchemy import SQLAlchemy
 import os 
 from sqlalchemy.exc import IntegrityError 
 import base64 
-import random # New: For generating random MAC addresses
-import re     # For regular expressions (still useful for internal formatting)
+import random 
+import re     
 
 # --- App Configuration ---
 app = Flask(__name__)
@@ -20,8 +20,8 @@ app.config['SECRET_KEY'] = 'your_new_strong_random_secret_key_for_iot_app_CHANGE
 # Initialize SQLAlchemy with the Flask app
 db = SQLAlchemy(app)
 
-# --- Database Model Definition ---
-# Defines the 'device' table structure in the database
+# --- Database Model Definitions ---
+# Defines the 'device' table structure in the database (for whitelisted devices)
 class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(100), nullable=False) 
@@ -33,6 +33,15 @@ class Device(db.Model):
     # String representation for debugging
     def __repr__(self):
         return f"Device('{self.user_name}', '{self.assigned_number}', '{self.device_name}', '{self.encrypted_device_name}', '{self.mac_address}')"
+
+# NEW MODEL: Defines the 'quarantined_device' table structure
+class QuarantinedDevice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    mac_address = db.Column(db.String(17), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"QuarantinedDevice('{self.mac_address}')"
+
 
 # --- Helper Function for Number Assignment ---
 # Calculates the next available unique assigned number
@@ -53,7 +62,6 @@ def simulate_encrypt(data_string):
 # --- Random MAC Address Generation Function ---
 # Generates a random, plausible-looking MAC address.
 def generate_random_mac():
-    # Generate 6 random bytes, convert to hex, and join with colons
     return ':'.join(['{:02x}'.format(random.randint(0x00, 0xFF)) for _ in range(6)]).upper()
 
 # --- Simulated Network Device Detection Function ---
@@ -67,9 +75,10 @@ def get_network_mac_addresses():
     for _ in range(3): # Generate 3 random "unregistered" MACs
         detected_macs.add(generate_random_mac())
 
-    # Optionally, add some MACs from existing dummy data to simulate them being "detected"
-    # This ensures that some registered devices also appear as detected.
-    # We'll fetch existing MACs from the DB later in the whitelist route for comparison.
+    # To make the demo more dynamic, let's also add some MACs from currently
+    # registered devices to the 'detected' list, so the "unregistered" list
+    # only shows truly new ones.
+    # We'll fetch existing MACs from the DB later in the /api/scan_network route.
     
     return detected_macs
 
@@ -90,15 +99,29 @@ def register():
 def register_device():
     user_name = request.form.get('user_name') 
     device_name = request.form.get('device_name')
-    # MAC address is now automatically generated, not taken from form
-    
+    # Re-enable MAC address input from form for demo purposes
+    mac_address = request.form.get('mac_address') 
+
+    # Validate MAC address format (simple check)
+    if mac_address:
+        mac_address = mac_address.strip().replace('-', ':').upper()
+        if not re.fullmatch(r'([0-9A-F]{2}:){5}[0-9A-F]{2}', mac_address):
+            flash('Invalid MAC address format. Please use XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX.', 'error')
+            return render_template('register.html', error="Invalid MAC address format.")
+    else:
+        # If MAC is not provided, generate a random one (fallback)
+        mac_address = generate_random_mac()
+        while Device.query.filter_by(mac_address=mac_address).first():
+            mac_address = generate_random_mac()
+
+
     if user_name and device_name:
         try:
-            # Generate a unique MAC address for the new device
-            new_mac_address = generate_random_mac()
-            # Ensure the generated MAC is unique (unlikely to collide, but good practice)
-            while Device.query.filter_by(mac_address=new_mac_address).first():
-                new_mac_address = generate_random_mac()
+            # Check if MAC address already exists in DB (for manual input)
+            existing_mac = Device.query.filter_by(mac_address=mac_address).first()
+            if existing_mac:
+                flash(f'Device with MAC address {mac_address} is already registered.', 'error')
+                return render_template('register.html', error=f"MAC address {mac_address} already registered.")
 
             assigned_number = get_next_assigned_number()
             encrypted_name = simulate_encrypt(device_name.strip())
@@ -108,12 +131,21 @@ def register_device():
                 assigned_number=assigned_number, 
                 device_name=device_name.strip(),
                 encrypted_device_name=encrypted_name,
-                mac_address=new_mac_address # Use the generated MAC address
+                mac_address=mac_address 
             )
 
             db.session.add(new_device)
             db.session.commit()
-            flash('Device registered successfully!', 'success') 
+
+            # NEW LOGIC: If this device was previously quarantined, unquarantine it
+            quarantined_entry = QuarantinedDevice.query.filter_by(mac_address=mac_address).first()
+            if quarantined_entry:
+                db.session.delete(quarantined_entry)
+                db.session.commit()
+                flash(f'Device {device_name} registered and unquarantined successfully!', 'success')
+            else:
+                flash('Device registered successfully!', 'success') 
+            
             return redirect(url_for('whitelist'))
         except Exception as e:
             db.session.rollback() 
@@ -124,26 +156,81 @@ def register_device():
         flash('Please enter all required fields.', 'error') 
         return render_template('register.html', error="Please enter all required fields.")
 
-# Displays the list of whitelisted devices and detected unregistered devices
+# Displays the list of whitelisted devices
 @app.route('/whitelist')
 def whitelist():
-    # Get all registered devices from the database
     registered_devices = Device.query.order_by(Device.assigned_number).all()
-    
-    # Get all MAC addresses from registered devices for easy lookup
-    registered_macs = {d.mac_address for d in registered_devices}
-
-    # Get MAC addresses currently "detected" on the simulated network
-    detected_macs = get_network_mac_addresses()
-
-    # Find MAC addresses that are detected but NOT registered
-    unregistered_macs = detected_macs - registered_macs
-
     return render_template(
         'whitelist.html', 
-        devices=registered_devices, 
-        unregistered_macs=list(unregistered_macs) 
+        devices=registered_devices
     )
+
+# Displays the Network Scan page (initial load)
+@app.route('/network_scan')
+def network_scan_page():
+    return render_template('network_scan.html')
+
+# API ROUTE: To perform the actual scan and return JSON
+@app.route('/api/scan_network', methods=['GET'])
+def api_scan_network():
+    registered_macs = {d.mac_address for d in Device.query.all()}
+    quarantined_macs_db = {q.mac_address for q in QuarantinedDevice.query.all()} 
+    
+    detected_macs = get_network_mac_addresses()
+    
+    # Add some registered MACs to detected_macs to simulate them being seen
+    num_to_add = min(len(registered_macs), 2) 
+    if num_to_add > 0:
+        detected_macs.update(random.sample(list(registered_macs), num_to_add))
+
+    unregistered_macs = detected_macs - registered_macs - quarantined_macs_db
+
+    return jsonify(
+        unregistered_macs=list(unregistered_macs),
+        quarantined_macs=list(quarantined_macs_db)
+    )
+
+# API ROUTE: To quarantine a device
+@app.route('/api/quarantine_device', methods=['POST'])
+def api_quarantine_device():
+    mac_address = request.json.get('mac_address')
+    if not mac_address:
+        return jsonify(success=False, message="MAC address is required."), 400
+
+    try:
+        if QuarantinedDevice.query.filter_by(mac_address=mac_address).first():
+            return jsonify(success=False, message=f"MAC {mac_address} is already quarantined."), 409 
+
+        new_quarantined = QuarantinedDevice(mac_address=mac_address)
+        db.session.add(new_quarantined)
+        db.session.commit()
+        return jsonify(success=True, message=f"MAC {mac_address} quarantined successfully!")
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error quarantining MAC {mac_address}: {e}")
+        return jsonify(success=False, message="An error occurred during quarantine."), 500
+
+# API ROUTE: To unquarantine a device (if needed manually, though registration handles it)
+# This route is now explicitly added for manual unquarantine from the network scan page
+@app.route('/api/unquarantine_device', methods=['POST'])
+def api_unquarantine_device():
+    mac_address = request.json.get('mac_address')
+    if not mac_address:
+        return jsonify(success=False, message="MAC address is required."), 400
+
+    try:
+        quarantined_entry = QuarantinedDevice.query.filter_by(mac_address=mac_address).first()
+        if quarantined_entry:
+            db.session.delete(quarantined_entry)
+            db.session.commit()
+            return jsonify(success=True, message=f"MAC {mac_address} unquarantined successfully!")
+        else:
+            return jsonify(success=False, message=f"MAC {mac_address} not found in quarantine list."), 404
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error unquarantining MAC {mac_address}: {e}")
+        return jsonify(success=False, message="An error occurred during unquarantine."), 500
+
 
 # Handles deletion of a specific device (POST request)
 @app.route('/delete/<int:device_id>', methods=['POST'])
@@ -167,13 +254,11 @@ def edit_device(device_id):
     if request.method == 'POST':
         user_name = request.form['user_name'].strip()
         device_name = request.form['device_name'].strip()
-        # MAC address is no longer editable via form, it's generated on creation
         
         try:
             device.user_name = user_name
             device.device_name = device_name
             device.encrypted_device_name = simulate_encrypt(device_name)
-            # device.mac_address is NOT updated here as it's meant to be fixed on creation
             
             db.session.commit()
             flash('Device updated successfully!', 'success')
@@ -250,3 +335,4 @@ if __name__ == '__main__':
 
     # Run the Flask development server
     app.run(debug=True)
+
