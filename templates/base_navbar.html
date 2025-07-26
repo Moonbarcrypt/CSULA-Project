@@ -1,0 +1,10 @@
+{# Common navigation bar included in other templates #}
+<nav style="background-color: #333; padding: 1em; margin-bottom: 1em;">
+    <ul style="list-style-type: none; margin: 0; padding: 0; display: flex;">
+        <li style="margin-right: 20px;"><a href="{{ url_for('index') }}" style="color: white; text-decoration: none;">Home</a></li>
+        <li style="margin-right: 20px;"><a href="{{ url_for('register') }}" style="color: white; text-decoration: none;">Register Device</a></li>
+        <li style="margin-right: 20px;"><a href="{{ url_for('whitelist') }}" style="color: white; text-decoration: none;">View Whitelist</a></li>
+        {# FIX: Changed 'network_scan' to 'network_scan_page' #}
+        <li><a href="{{ url_for('network_scan_page') }}" style="color: white; text-decoration: none;">Network Scan</a></li>
+    </ul>
+</nav>

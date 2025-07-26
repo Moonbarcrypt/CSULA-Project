@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT Device Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background-color: #f0f2f5; /* Light gray background */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure body takes full viewport height */
+        }
+        .container { 
+            padding: 40px 20px; 
+            max-width: 900px; /* Max width for content */
+            margin: 40px auto; /* Center the container with top/bottom margin */
+            background-color: #ffffff; /* White background for the main content area */
+            border-radius: 12px; /* Rounded corners for the container */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            text-align: center; /* Center text within the container */
+            flex-grow: 1; /* Allow container to grow and push footer down */
+        }
+        h1 { 
+            color: #2c3e50; /* Darker blue-gray for main heading */
+            font-size: 2.8em; /* Larger font size */
+            margin-bottom: 20px; 
+            font-weight: 700; /* Bold font weight */
+        }
+        p {
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        nav { 
+            background-color: #2c3e50; /* Darker blue-gray for navbar */
+            padding: 1em 0; 
+            margin-bottom: 0; /* Remove margin-bottom as container has margin-top */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        nav ul { 
+            list-style-type: none; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; /* Center nav items */
+        }
+        nav ul li { 
+            margin: 0 15px; /* Spacing between nav items */
+        }
+        nav ul li a { 
+            color: white; 
+            text-decoration: none; 
+            font-weight: 600; /* Semi-bold nav links */
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease; /* Smooth transition on hover */
+        }
+        nav ul li a:hover { 
+            background-color: #34495e; /* Slightly lighter background on hover */
+            text-decoration: none; 
+        }
+        .security-focus {
+            background-color: #e8f5e9; /* Very light green for security alert */
+            border: 1px solid #c8e6c9; /* Green border */
+            padding: 25px;
+            margin: 30px auto; /* Centered with more margin */
+            border-radius: 10px; /* More rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* Soft shadow */
+            color: #2e7d32; /* Dark green text */
+            max-width: 700px; /* Max width for alert box */
+            text-align: left; /* Align text left within the alert box */
+        }
+        .security-focus h2 {
+            color: #2e7d32; /* Dark green for alert heading */
+            font-size: 1.8em;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .security-focus p {
+            font-size: 1em;
+            color: #4caf50; /* Lighter green for alert body text */
+            margin-bottom: 10px;
+        }
+        .action-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* Space between buttons */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+        .action-buttons a {
+            background-color: #3498db; /* Blue button */
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .action-buttons a:hover {
+            background-color: #217dbb; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        footer {
+            margin-top: auto; /* Pushes footer to the bottom */
+            padding: 20px;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+            background-color: #e0e0e0; /* Light gray footer background */
+            border-top: 1px solid #ccc;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .container { margin: 20px auto; padding: 20px; }
+            .security-focus { padding: 15px; margin: 20px auto; }
+            .security-focus h2 { font-size: 1.5em; }
+            .action-buttons { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    {% include 'base_navbar.html' %} 
+
+    <div class="container">
+        <h1>Welcome to the IoT Device Manager!</h1>
+        <p>This application provides a robust platform for managing and securing your Internet of Things (IoT) devices.</p>
+        
+        <div class="security-focus">
+            <h2>Protect Your Network: Detect Unauthorized Devices!</h2>
+            <p>Our system is designed to help you identify devices attempting to connect to your network that are not on your approved whitelist. This is crucial for preventing unauthorized access and potential security intrusions.</p>
+            <p>Click the "Network Scan" button below or in the navigation bar to see if any new or unknown devices are detected.</p>
+        </div>
+
+        <p>Use the buttons below to navigate the application:</p>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('register') }}">Register New Device</a>
+            <a href="{{ url_for('whitelist') }}">View Whitelist</a>
+            {# FIX: Changed 'network_scan' to 'network_scan_page' #}
+            <a href="{{ url_for('network_scan_page') }}">Network Scan</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
+    </footer>
+</body>
+</html>

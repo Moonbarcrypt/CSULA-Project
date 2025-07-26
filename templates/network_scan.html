@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Scan & Unregistered Devices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background-color: #f0f2f5; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; 
+        }
+        .container { 
+            padding: 40px 20px; 
+            max-width: 900px; 
+            margin: 40px auto; 
+            background-color: #ffffff; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); 
+            text-align: center; 
+            flex-grow: 1; 
+        }
+        h1 { 
+            color: #2c3e50; 
+            font-size: 2.8em; 
+            margin-bottom: 20px; 
+            font-weight: 700; 
+        }
+        p {
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        nav { 
+            background-color: #2c3e50; 
+            padding: 1em 0; 
+            margin-bottom: 0; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        nav ul { 
+            list-style-type: none; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+        }
+        nav ul li { 
+            margin: 0 15px; 
+        }
+        nav ul li a { 
+            color: white; 
+            text-decoration: none; 
+            font-weight: 600; 
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease; 
+        }
+        nav ul li a:hover { 
+            background-color: #34495e; 
+            text-decoration: none; 
+        }
+
+        /* Scan Button */
+        .scan-button {
+            background-color: #28a745; 
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.2em;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .scan-button:hover {
+            background-color: #218838; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .scan-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .scan-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-message {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Results Sections */
+        .results-section {
+            padding: 20px;
+            margin-top: 2em;
+            border-radius: 8px;
+            text-align: left; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Unregistered Devices Section */
+        .unregistered-section {
+            background-color: #fff3cd; /* Light yellow background */
+            border: 1px solid #ffeeba; /* Yellow border */
+            color: #856404; /* Dark yellow text */
+        }
+        .unregistered-section h2 {
+            color: #856404; 
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        .unregistered-section ul {
+            list-style-type: none; 
+            margin-left: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+        .unregistered-section li {
+            background-color: #fcf8e3; 
+            border: 1px solid #faebcc;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace; 
+            font-size: 1.1em;
+            display: flex; /* Use flexbox for MAC and button */
+            justify-content: space-between; /* Space out items */
+            align-items: center; /* Vertically align items */
+        }
+        .unregistered-section li .mac-address {
+            flex-grow: 1; /* Allow MAC address to take available space */
+            text-align: left; /* Align MAC address to the left */
+        }
+        .unregistered-section li .quarantine-button {
+            background-color: #dc3545; /* Red for quarantine */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+        }
+        .unregistered-section li .quarantine-button:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+        .unregistered-section li .quarantine-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Quarantined Devices Section */
+        .quarantined-section {
+            background-color: #e0e0e0; /* Light gray for quarantined */
+            border: 1px solid #bdbdbd; /* Gray border */
+            color: #424242; /* Dark gray text */
+            margin-top: 30px; /* Space from unregistered section */
+        }
+        .quarantined-section h2 {
+            color: #424242;
+            text-align: center;
+        }
+        .quarantined-section ul {
+            list-style-type: none;
+            margin-left: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+        .quarantined-section li {
+            background-color: #eeeeee; /* Lighter gray for list items */
+            border: 1px solid #d0d0d0;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quarantined-section li .mac-address {
+            flex-grow: 1;
+            text-align: left;
+        }
+        .quarantined-section li .unquarantine-button {
+            background-color: #007bff; /* Blue for unquarantine */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+        }
+        .quarantined-section li .unquarantine-button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        .quarantined-section li .unquarantine-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        /* Safe State */
+        .results-section.safe {
+            background-color: #d4edda; /* Light green background */
+            border-color: #c3e6cb; /* Green border */
+            color: #155724; /* Dark green text */
+        }
+        .results-section.safe h2 {
+            color: #155724; /* Green for safe */
+        }
+        .results-section.safe li {
+            background-color: #e2f0e7; /* Lighter green for safe list items */
+            border-color: #d0e9c6;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .container { margin: 20px auto; padding: 20px; }
+            .results-section { padding: 15px; margin: 20px auto; }
+            .results-section h2 { font-size: 1.5em; }
+            .scan-button { padding: 12px 25px; font-size: 1em; }
+            .unregistered-section li, .quarantined-section li {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+            .unregistered-section li .mac-address, .quarantined-section li .mac-address {
+                text-align: left;
+                margin-bottom: 8px;
+                width: 100%; /* Take full width */
+            }
+            .unregistered-section li .quarantine-button, .quarantined-section li .unquarantine-button {
+                width: 100%; /* Full width buttons */
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'base_navbar.html' %} 
+
+    <div class="container">
+        <h1>Network Scan & Intrusion Detection</h1>
+        <p>Click the button below to perform a simulated scan of your network and identify any unregistered devices. You can then choose to "quarantine" them.</p>
+
+        <button id="scanButton" class="scan-button">
+            <span id="buttonText">Perform Network Scan</span>
+        </button>
+
+        <div id="loadingIndicator" class="loading-message" style="display: none;">
+            <div class="spinner"></div> Scanning network...
+        </div>
+
+        {# Section for Unregistered Devices #}
+        <div id="unregisteredResults" class="results-section unregistered-section" style="display: none;">
+            <h2>⚠️ Potential Intrusion Alert!</h2>
+            <p>The following MAC addresses were found on your network but are **NOT** in your whitelist:</p>
+            <ul id="unregisteredMacList">
+                {# Unregistered MACs will be injected here by JavaScript #}
+            </ul>
+            <p>You can "Quarantine" these devices to simulate blocking their internet access.</p>
+        </div>
+
+        {# Section for Quarantined Devices #}
+        <div id="quarantinedResults" class="results-section quarantined-section" style="display: none;">
+            <h2>🚫 Quarantined Devices</h2>
+            <p>The following devices have been "quarantined" (simulated internet access blocked):</p>
+            <ul id="quarantinedMacList">
+                {# Quarantined MACs will be injected here by JavaScript #}
+            </ul>
+            <p>Register a quarantined device to automatically unquarantine it.</p>
+        </div>
+
+        {# Message when network is clean #}
+        <div id="networkCleanMessage" class="results-section safe" style="display: none;">
+            <h2>✅ Network Clean!</h2>
+            <p>All detected devices on your network appear to be whitelisted or already quarantined. No new unauthorized devices found.</p>
+        </div>
+
+        <div class="link-group">
+            <a href="{{ url_for('register') }}">Register New Device</a>
+            <a href="{{ url_for('whitelist') }}">View Whitelist</a>
+            <a href="{{ url_for('index') }}">Go to Home</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const scanButton = document.getElementById('scanButton');
+            const buttonText = document.getElementById('buttonText');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const unregisteredResults = document.getElementById('unregisteredResults');
+            const unregisteredMacList = document.getElementById('unregisteredMacList');
+            const quarantinedResults = document.getElementById('quarantinedResults');
+            const quarantinedMacList = document.getElementById('quarantinedMacList');
+            const networkCleanMessage = document.getElementById('networkCleanMessage');
+
+            // Function to render the results sections
+            async function renderScanResults() {
+                // Hide all result sections initially
+                unregisteredResults.style.display = 'none';
+                quarantinedResults.style.display = 'none';
+                networkCleanMessage.style.display = 'none';
+
+                try {
+                    const response = await fetch('/api/scan_network');
+                    const data = await response.json();
+                    const unregisteredMacs = data.unregistered_macs;
+                    const quarantinedMacs = data.quarantined_macs;
+
+                    // Render Unregistered Devices
+                    unregisteredMacList.innerHTML = ''; // Clear previous list
+                    if (unregisteredMacs && unregisteredMacs.length > 0) {
+                        unregisteredMacs.forEach(mac => {
+                            const listItem = document.createElement('li');
+                            listItem.innerHTML = `
+                                <span class="mac-address">${mac}</span>
+                                <button class="quarantine-button" data-mac="${mac}">Quarantine</button>
+                            `;
+                            unregisteredMacList.appendChild(listItem);
+                        });
+                        unregisteredResults.style.display = 'block';
+                    }
+
+                    // Render Quarantined Devices
+                    quarantinedMacList.innerHTML = ''; // Clear previous list
+                    if (quarantinedMacs && quarantinedMacs.length > 0) {
+                        quarantinedMacs.forEach(mac => {
+                            const listItem = document.createElement('li');
+                            listItem.innerHTML = `
+                                <span class="mac-address">${mac}</span>
+                                {# Unquarantine button is not needed here as registration handles it, but could be added for manual unquarantine #}
+                            `;
+                            quarantinedMacList.appendChild(listItem);
+                        });
+                        quarantinedResults.style.display = 'block';
+                    }
+
+                    // Show network clean message if no unregistered and no quarantined
+                    if (unregisteredMacs.length === 0 && quarantinedMacs.length === 0) {
+                        networkCleanMessage.style.display = 'block';
+                    } else if (unregisteredMacs.length === 0 && quarantinedMacs.length > 0) {
+                        // If only quarantined devices exist, show quarantined section and a modified clean message
+                        networkCleanMessage.style.display = 'block';
+                        networkCleanMessage.querySelector('h2').textContent = '✅ Network Clean! (Some devices are quarantined)';
+                        networkCleanMessage.querySelector('p').textContent = 'All detected devices are either whitelisted or have been quarantined.';
+                    }
+
+
+                } catch (error) {
+                    console.error('Error rendering scan results:', error);
+                    unregisteredResults.innerHTML = `
+                        <div class="results-section error">
+                            <h2>Error!</h2>
+                            <p>An error occurred while fetching scan results. Please try again.</p>
+                        </div>
+                    `;
+                    unregisteredResults.style.display = 'block';
+                }
+            }
+
+            // Event listener for the main scan button
+            scanButton.addEventListener('click', async function() {
+                scanButton.disabled = true;
+                buttonText.textContent = 'Scanning...';
+                loadingIndicator.style.display = 'flex';
+                
+                // Clear previous results immediately
+                unregisteredMacList.innerHTML = '';
+                quarantinedMacList.innerHTML = '';
+                unregisteredResults.style.display = 'none';
+                quarantinedResults.style.display = 'none';
+                networkCleanMessage.style.display = 'none';
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
+                    await renderScanResults(); // Re-render results after scan
+                } catch (error) {
+                    console.error('Error during network scan:', error);
+                    // Display a general error if renderScanResults also failed
+                    networkCleanMessage.style.display = 'block';
+                    networkCleanMessage.classList.remove('safe');
+                    networkCleanMessage.style.backgroundColor = '#f8d7da';
+                    networkCleanMessage.style.borderColor = '#f5c6cb';
+                    networkCleanMessage.style.color = '#721c24';
+                    networkCleanMessage.innerHTML = `
+                        <h2>Error!</h2>
+                        <p>An error occurred while performing the scan. Please try again.</p>
+                    `;
+                } finally {
+                    scanButton.disabled = false;
+                    buttonText.textContent = 'Perform Network Scan';
+                    loadingIndicator.style.display = 'none';
+                }
+            });
+
+            // Event delegation for quarantine buttons
+            // Listen for clicks on the unregisteredMacList and check if it's a quarantine button
+            unregisteredMacList.addEventListener('click', async function(event) {
+                if (event.target.classList.contains('quarantine-button')) {
+                    const button = event.target;
+                    const macToQuarantine = button.dataset.mac;
+                    
+                    button.disabled = true; // Disable button immediately
+                    button.textContent = 'Blocking...';
+
+                    try {
+                        const response = await fetch('/api/quarantine_device', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ mac_address: macToQuarantine }),
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            console.log(result.message);
+                            // Re-render the scan results to update the lists
+                            await renderScanResults(); 
+                        } else {
+                            console.error('Failed to quarantine:', result.message);
+                            alert('Failed to quarantine device: ' + result.message); // Use alert for quick feedback
+                        }
+                    } catch (error) {
+                        console.error('Network error during quarantine:', error);
+                        alert('Network error during quarantine. See console for details.');
+                    } finally {
+                        button.disabled = false; // Re-enable in case of error
+                        button.textContent = 'Quarantine';
+                    }
+                }
+            });
+
+            // Initial scan when the page loads
+            // This will show the current state without needing to click "Scan" first
+            // You can remove this if you strictly want the user to always click scan first
+            // renderScanResults(); 
+        });
+    </script>
+</body>
+</html>
