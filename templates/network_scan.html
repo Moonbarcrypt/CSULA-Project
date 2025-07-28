@@ -182,57 +182,6 @@
             background-color: #cccccc;
             cursor: not-allowed;
         }
-
-        /* Watchlisted Devices Section */ 
-        .watchlisted-section { 
-            background-color: #e0e0e0; 
-            border: 1px solid #bdbdbd; 
-            color: #424242; 
-            margin-top: 30px; 
-        }
-        .watchlisted-section h2 { 
-            color: #424242;
-            text-align: center;
-        }
-        .watchlisted-section ul { 
-            list-style-type: none;
-            margin-left: 0;
-            padding-left: 0;
-            text-align: center;
-        }
-        .watchlisted-section li { 
-            background-color: #eeeeee; 
-            border: 1px solid #d0d0d0;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .watchlisted-section li .mac-address { 
-            flex-grow: 1;
-            text-align: left;
-        }
-        .watchlisted-section li .unwatchlist-button { 
-            background-color: #007bff; /* Blue for "Remove from Watchlist" */
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.2s ease;
-        }
-        .watchlisted-section li .unwatchlist-button:hover { 
-            background-color: #0056b3; 
-        }
-        .watchlisted-section li .unwatchlist-button:disabled { 
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
         
         /* Safe State */
         .results-section.safe {
@@ -255,17 +204,17 @@
             .results-section { padding: 15px; margin: 20px auto; }
             .results-section h2 { font-size: 1.5em; }
             .scan-button { padding: 12px 25px; font-size: 1em; }
-            .unregistered-section li, .watchlisted-section li { 
+            .unregistered-section li { 
                 flex-direction: column;
                 align-items: flex-start;
                 padding: 10px;
             }
-            .unregistered-section li .mac-address, .watchlisted-section li .mac-address { 
+            .unregistered-section li .mac-address { 
                 text-align: left;
                 margin-bottom: 8px;
                 width: 100%; 
             }
-            .unregistered-section li .watchlist-button, .watchlisted-section li .unwatchlist-button { 
+            .unregistered-section li .watchlist-button { 
                 width: 100%; 
             }
         }
@@ -296,16 +245,6 @@
             <p>You can "Add to Watchlist" these devices to monitor them for suspicious activity.</p>
         </div>
 
-        {# Section for Watchlisted Devices #}
-        <div id="watchlistedResults" class="results-section watchlisted-section" style="display: none;">
-            <h2>🕵️‍♂️ Watchlisted Devices</h2>
-            <p>The following devices are currently on your watchlist for monitoring:</p>
-            <ul id="watchlistedMacList">
-                {# Watchlisted MACs will be injected here by JavaScript #}
-            </ul>
-            <p>Register a watchlisted device to automatically remove it from the watchlist, or manually remove it below.</p>
-        </div>
-
         {# Message when network is clean #}
         <div id="networkCleanMessage" class="results-section safe" style="display: none;">
             <h2>✅ Network Clean!</h2>
@@ -314,7 +253,7 @@
 
         <div class="link-group">
             <a href="{{ url_for('register') }}">Register New Device</a>
-            <a href="{{ url_for('whitelist') }}">View Whitelist</a>
+            <a href="{{ url_for('device_list_page') }}">View Device List</a> {# Updated link #}
             <a href="{{ url_for('index') }}">Go to Home</a>
         </div>
     </div>
@@ -330,22 +269,19 @@
             const loadingIndicator = document.getElementById('loadingIndicator');
             const unregisteredResults = document.getElementById('unregisteredResults');
             const unregisteredMacList = document.getElementById('unregisteredMacList');
-            const watchlistedResults = document.getElementById('watchlistedResults'); 
-            const watchlistedMacList = document.getElementById('watchlistedMacList'); 
             const networkCleanMessage = document.getElementById('networkCleanMessage');
 
             // Function to render the results sections
             async function renderScanResults() {
                 // Hide all result sections initially
                 unregisteredResults.style.display = 'none';
-                watchlistedResults.style.display = 'none'; 
                 networkCleanMessage.style.display = 'none';
 
                 try {
                     const response = await fetch('/api/scan_network');
                     const data = await response.json();
                     const unregisteredMacs = data.unregistered_macs;
-                    const watchlistedMacs = data.watchlisted_macs; 
+                    // watchlistedMacs is no longer used here as it's displayed on device_list_page
 
                     // Render Unregistered Devices
                     unregisteredMacList.innerHTML = ''; 
@@ -361,27 +297,10 @@
                         unregisteredResults.style.display = 'block';
                     }
 
-                    // Render Watchlisted Devices
-                    watchlistedMacList.innerHTML = ''; 
-                    if (watchlistedMacs && watchlistedMacs.length > 0) { 
-                        watchlistedMacs.forEach(mac => { 
-                            const listItem = document.createElement('li');
-                            listItem.innerHTML = `
-                                <span class="mac-address">${mac}</span>
-                                <button class="unwatchlist-button" data-mac="${mac}">Remove from Watchlist</button>
-                            `;
-                            watchlistedMacList.appendChild(listItem); 
-                        });
-                        watchlistedResults.style.display = 'block'; 
-                    }
-
-                    // Show network clean message if no unregistered and no watchlisted
-                    if (unregisteredMacs.length === 0 && watchlistedMacs.length === 0) { 
+                    // Show network clean message if no unregistered
+                    if (unregisteredMacs.length === 0) { 
                         networkCleanMessage.style.display = 'block';
-                    } else if (unregisteredMacs.length === 0 && watchlistedMacs.length > 0) { 
-                        // If only watchlisted devices exist, show watchlisted section and a modified clean message
-                        networkCleanMessage.style.display = 'block';
-                        networkCleanMessage.querySelector('h2').textContent = '✅ Network Clean! (Some devices are on watchlist)';
+                        networkCleanMessage.querySelector('h2').textContent = '✅ Network Clean!';
                         networkCleanMessage.querySelector('p').textContent = 'All detected devices are either whitelisted or are currently being monitored.';
                     }
 
@@ -406,9 +325,7 @@
                 
                 // Clear previous results immediately
                 unregisteredMacList.innerHTML = '';
-                watchlistedMacList.innerHTML = ''; 
                 unregisteredResults.style.display = 'none';
-                watchlistedResults.style.display = 'none'; 
                 networkCleanMessage.style.display = 'none';
 
                 try {
@@ -454,7 +371,7 @@
 
                         if (result.success) {
                             console.log(result.message);
-                            await renderScanResults(); 
+                            await renderScanResults(); // Re-render to remove from unregistered list
                         } else {
                             console.error('Failed to add to watchlist:', result.message); 
                             alert('Failed to add device to watchlist: ' + result.message); 
@@ -469,45 +386,10 @@
                 }
             });
 
-            // Event delegation for "Remove from Watchlist" buttons
-            watchlistedMacList.addEventListener('click', async function(event) { 
-                if (event.target.classList.contains('unwatchlist-button')) { 
-                    const button = event.target;
-                    const macToRemove = button.dataset.mac; 
-                    
-                    button.disabled = true; 
-                    button.textContent = 'Removing...'; 
-
-                    try {
-                        const response = await fetch('/api/remove_from_watchlist', { 
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ mac_address: macToRemove }), 
-                        });
-                        const result = await response.json();
-
-                        if (result.success) {
-                            console.log(result.message);
-                            await renderScanResults(); 
-                        } else {
-                            console.error('Failed to remove from watchlist:', result.message); 
-                            alert('Failed to remove device from watchlist: ' + result.message); 
-                        }
-                    } catch (error) {
-                        console.error('Network error during watchlist removal:', error); 
-                        alert('Network error during watchlist removal. See console for details.'); 
-                    } finally {
-                        button.disabled = false; 
-                        button.textContent = 'Remove from Watchlist'; 
-                    }
-                }
-            });
-
             // Initial scan when the page loads (optional, can be removed if you always want user to click scan)
             // renderScanResults(); 
         });
     </script>
 </body>
 </html>
+
