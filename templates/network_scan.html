@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Network Scan & Intrusion Detection</title>
+    <title>Network Scan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -62,333 +62,210 @@
             background-color: #34495e; 
             text-decoration: none; 
         }
-
-        /* Scan Button */
         .scan-button {
-            background-color: #28a745; 
+            background-color: #007bff; /* Blue */
             color: white;
-            padding: 15px 30px;
-            text-decoration: none;
+            padding: 12px 25px;
+            border: none;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 1.2em;
-            border: none;
+            font-size: 1.1em;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
-            margin-bottom: 30px;
+            margin-top: 20px;
         }
         .scan-button:hover {
-            background-color: #218838; 
+            background-color: #0056b3;
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        .scan-button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .scan-button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-message {
-            font-size: 1.2em;
-            color: #666;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Results Sections */
-        .results-section {
-            padding: 20px;
-            margin-top: 2em;
+        table {
+            width: 100%; 
+            border-collapse: collapse;
+            margin-top: 30px;
+            background-color: #fdfdfd;
             border-radius: 8px;
-            text-align: left; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
         }
-
-        /* Unregistered Devices Section */
-        .unregistered-section {
-            background-color: #fff3cd; /* Light yellow background */
-            border: 1px solid #ffeeba; /* Yellow border */
-            color: #856404; /* Dark yellow text */
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
         }
-        .unregistered-section h2 {
-            color: #856404; 
-            margin-top: 0;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 1.8em;
+        th {
+            background-color: #e9ecef;
+            color: #333;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-known {
+            color: #28a745; /* Green */
             font-weight: 600;
         }
-        .unregistered-section ul {
-            list-style-type: none; 
-            margin-left: 0;
-            padding-left: 0;
-            text-align: center;
+        .status-unknown {
+            color: #dc3545; /* Red */
+            font-weight: 600;
         }
-        .unregistered-section li {
-            background-color: #fcf8e3; 
-            border: 1px solid #faebcc;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace; 
-            font-size: 1.1em;
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .unregistered-section li .mac-address {
-            flex-grow: 1; 
-            text-align: left; 
-        }
-        .unregistered-section li .watchlist-button { 
-            background-color: #dc3545; /* Red for "Add to Watchlist" */
+        .register-button {
+            background-color: #28a745; /* Green */
             color: white;
             padding: 8px 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
+            text-decoration: none;
             font-size: 0.9em;
-            transition: background-color 0.2s ease;
+            transition: background-color 0.3s ease;
         }
-        .unregistered-section li .watchlist-button:hover { 
-            background-color: #c82333; 
+        .register-button:hover {
+            background-color: #218838;
         }
-        .unregistered-section li .watchlist-button:disabled { 
-            background-color: #cccccc;
-            cursor: not-allowed;
+        .alert {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
         }
-        
-        /* Safe State */
-        .results-section.safe {
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-info { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
+        }
+        .flash-message { 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            font-weight: 600;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        .flash-message.success { 
             background-color: #d4edda; 
-            border-color: #c3e6cb; 
             color: #155724; 
+            border: 1px solid #c3e6cb; 
         }
-        .results-section.safe h2 {
-            color: #155724; 
+        .flash-message.error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
         }
-        .results-section.safe li {
-            background-color: #e2f0e7; 
-            border-color: #d0e9c6;
+        .flash-message.info { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
+        }
+        footer {
+            margin-top: auto; 
+            padding: 20px;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+            background-color: #e0e0e0; 
+            border-top: 1px solid #ccc;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            h1 { font-size: 2em; }
+            h1 { font-size: 2.2em; }
             .container { margin: 20px auto; padding: 20px; }
-            .results-section { padding: 15px; margin: 20px auto; }
-            .results-section h2 { font-size: 1.5em; }
-            .scan-button { padding: 12px 25px; font-size: 1em; }
-            .unregistered-section li { 
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 10px;
-            }
-            .unregistered-section li .mac-address { 
-                text-align: left;
-                margin-bottom: 8px;
-                width: 100%; 
-            }
-            .unregistered-section li .watchlist-button { 
-                width: 100%; 
-            }
+            th, td { padding: 10px; font-size: 0.85em; }
+            .scan-button { padding: 10px 20px; font-size: 1em; }
+            .register-button { padding: 6px 10px; font-size: 0.8em; }
         }
     </style>
 </head>
 <body>
-    {% include 'base_navbar.html' %} 
+    {% include 'base_navbar.html' %}
 
     <div class="container">
-        <h1>Network Scan & Intrusion Detection</h1>
-        <p>Click the button below to perform a simulated scan of your network and identify any unregistered devices. You can then add them to a "Watchlist" for monitoring.</p>
+        <h1>Network Scan</h1>
+        <p>Scan your network to discover connected devices and identify any unknown ones.</p>
 
-        <button id="scanButton" class="scan-button">
-            <span id="buttonText">Perform Network Scan</span>
-        </button>
+        <form action="{{ url_for('network_scan_page') }}" method="POST">
+            <button type="submit" class="scan-button">Perform Network Scan</button>
+        </form>
 
-        <div id="loadingIndicator" class="loading-message" style="display: none;">
-            <div class="spinner"></div> Scanning network...
-        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        {# Section for Unregistered Devices #}
-        <div id="unregisteredResults" class="results-section unregistered-section" style="display: none;">
-            <h2>⚠️ Potential Intrusion Alert!</h2>
-            <p>The following MAC addresses were found on your network but are **NOT** in your whitelist:</p>
-            <ul id="unregisteredMacList">
-                {# Unregistered MACs will be injected here by JavaScript #}
-            </ul>
-            <p>You can "Add to Watchlist" these devices to monitor them for suspicious activity.</p>
-        </div>
-
-        {# Message when network is clean #}
-        <div id="networkCleanMessage" class="results-section safe" style="display: none;">
-            <h2>✅ Network Clean!</h2>
-            <p>All detected devices on your network appear to be whitelisted or already on the watchlist. No new unauthorized devices found.</p>
-        </div>
-
-        <div class="link-group">
-            <a href="{{ url_for('register') }}">Register New Device</a>
-            <a href="{{ url_for('device_list_page') }}">View Device List</a> {# Updated link #}
-            <a href="{{ url_for('index') }}">Go to Home</a>
-        </div>
+        {% if scan_results %}
+            <h2>Scan Results</h2>
+            {% if potential_intrusion_alert %}
+                <div class="alert alert-error">
+                    <strong>Potential Intrusion Alert!</strong> Unknown devices detected on your network.
+                </div>
+            {% endif %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device Name</th>
+                        <th>IP Address</th>
+                        <th>MAC Address</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in scan_results %}
+                    <tr>
+                        <td>
+                            {% if device.status == 'Unknown' %}
+                                <span class="status-unknown">{{ device.device_name }}</span> {# Displays "Unknown Device" #}
+                            {% else %}
+                                {{ device.device_name }}
+                            {% endif %}
+                        </td>
+                        <td>{{ device.ip }}</td>
+                        <td>{{ device.mac }}</td>
+                        <td>
+                            <span class="status-{{ device.status | lower }}">
+                                {{ device.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if device.status == 'Unknown' %}
+                                <a href="{{ url_for('register', mac=device.mac) }}" class="register-button">Register Device</a> {# Changed mac_address to mac #}
+                            {% else %}
+                                <a href="{{ url_for('edit_device', device_id=device.device_id) }}" class="register-button">Edit Details</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Click "Perform Network Scan" to see devices on your network.</p>
+        {% endif %}
     </div>
 
     <footer>
         <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
     </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const scanButton = document.getElementById('scanButton');
-            const buttonText = document.getElementById('buttonText');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const unregisteredResults = document.getElementById('unregisteredResults');
-            const unregisteredMacList = document.getElementById('unregisteredMacList');
-            const networkCleanMessage = document.getElementById('networkCleanMessage');
-
-            // Function to render the results sections
-            async function renderScanResults() {
-                // Hide all result sections initially
-                unregisteredResults.style.display = 'none';
-                networkCleanMessage.style.display = 'none';
-
-                try {
-                    const response = await fetch('/api/scan_network');
-                    const data = await response.json();
-                    const unregisteredMacs = data.unregistered_macs;
-                    // watchlistedMacs is no longer used here as it's displayed on device_list_page
-
-                    // Render Unregistered Devices
-                    unregisteredMacList.innerHTML = ''; 
-                    if (unregisteredMacs && unregisteredMacs.length > 0) {
-                        unregisteredMacs.forEach(mac => {
-                            const listItem = document.createElement('li');
-                            listItem.innerHTML = `
-                                <span class="mac-address">${mac}</span>
-                                <button class="watchlist-button" data-mac="${mac}">Add to Watchlist</button>
-                            `;
-                            unregisteredMacList.appendChild(listItem);
-                        });
-                        unregisteredResults.style.display = 'block';
-                    }
-
-                    // Show network clean message if no unregistered
-                    if (unregisteredMacs.length === 0) { 
-                        networkCleanMessage.style.display = 'block';
-                        networkCleanMessage.querySelector('h2').textContent = '✅ Network Clean!';
-                        networkCleanMessage.querySelector('p').textContent = 'All detected devices are either whitelisted or are currently being monitored.';
-                    }
-
-
-                } catch (error) {
-                    console.error('Error rendering scan results:', error);
-                    unregisteredResults.innerHTML = `
-                        <div class="results-section error">
-                            <h2>Error!</h2>
-                            <p>An error occurred while fetching scan results. Please try again.</p>
-                        </div>
-                    `;
-                    unregisteredResults.style.display = 'block';
-                }
-            }
-
-            // Event listener for the main scan button
-            scanButton.addEventListener('click', async function() {
-                scanButton.disabled = true;
-                buttonText.textContent = 'Scanning...';
-                loadingIndicator.style.display = 'flex';
-                
-                // Clear previous results immediately
-                unregisteredMacList.innerHTML = '';
-                unregisteredResults.style.display = 'none';
-                networkCleanMessage.style.display = 'none';
-
-                try {
-                    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
-                    await renderScanResults(); // Re-render results after scan
-                } catch (error) {
-                    console.error('Error during network scan:', error);
-                    // Display a general error if renderScanResults also failed
-                    networkCleanMessage.style.display = 'block';
-                    networkCleanMessage.classList.remove('safe');
-                    networkCleanMessage.style.backgroundColor = '#f8d7da';
-                    networkCleanMessage.style.borderColor = '#f5c6cb';
-                    networkCleanMessage.style.color = '#721c24';
-                    networkCleanMessage.innerHTML = `
-                        <h2>Error!</h2>
-                        <p>An error occurred while performing the scan. Please try again.</p>
-                    `;
-                } finally {
-                    scanButton.disabled = false;
-                    buttonText.textContent = 'Perform Network Scan';
-                    loadingIndicator.style.display = 'none';
-                }
-            });
-
-            // Event delegation for "Add to Watchlist" buttons
-            unregisteredMacList.addEventListener('click', async function(event) {
-                if (event.target.classList.contains('watchlist-button')) { 
-                    const button = event.target;
-                    const macToWatchlist = button.dataset.mac; 
-                    
-                    button.disabled = true; 
-                    button.textContent = 'Adding...'; 
-
-                    try {
-                        const response = await fetch('/api/add_to_watchlist', { 
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ mac_address: macToWatchlist }), 
-                        });
-                        const result = await response.json();
-
-                        if (result.success) {
-                            console.log(result.message);
-                            await renderScanResults(); // Re-render to remove from unregistered list
-                        } else {
-                            console.error('Failed to add to watchlist:', result.message); 
-                            alert('Failed to add device to watchlist: ' + result.message); 
-                        }
-                    } catch (error) {
-                        console.error('Network error during watchlist addition:', error); 
-                        alert('Network error during watchlist addition. See console for details.'); 
-                    } finally {
-                        button.disabled = false; 
-                        button.textContent = 'Add to Watchlist'; 
-                    }
-                }
-            });
-
-            // Initial scan when the page loads (optional, can be removed if you always want user to click scan)
-            // renderScanResults(); 
-        });
-    </script>
 </body>
 </html>

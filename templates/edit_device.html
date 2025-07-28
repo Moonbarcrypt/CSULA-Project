@@ -86,6 +86,15 @@
             font-size: 1em;
             box-sizing: border-box; /* Include padding in width */
         }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto; /* Override full width for checkboxes */
+        }
         button[type="submit"] {
             background-color: #28a745; /* Green submit button */
             color: white;
@@ -95,7 +104,7 @@
             font-weight: 600;
             font-size: 1.1em;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         button[type="submit"]:hover {
@@ -181,9 +190,29 @@
             <label>MAC Address:</label><br>
             <input type="text" value="{{ device.mac_address }}" readonly style="background-color: #e9e9e9; cursor: not-allowed;"><br><br>
 
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_whitelisted" name="is_whitelisted" {% if device.is_whitelisted %}checked{% endif %}>
+                <label for="is_whitelisted">Whitelist this device</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_watchlist" name="is_watchlist" {% if device.is_watchlist %}checked{% endif %}>
+                <label for="is_watchlist">Add to Watchlist</label>
+            </div>
+            <br>
+
             <button type="submit">Update Device</button>
         </form>
-        <a href="{{ url_for('whitelist') }}" class="back-link">Back to Whitelist</a>
+
+        <div class="mt-6">
+            <form action="{{ url_for('delete_device', device_id=device.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this device?');" style="display:inline-block; margin-top: 20px;">
+                <button type="submit"
+                        style="background-color: #dc3545; color: white; padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                    Delete Device
+                </button>
+            </form>
+        </div>
+        <a href="{{ url_for('device_list_page') }}" class="back-link">Back to Device List</a> {# Updated link #}
     </div>
 
     <footer>

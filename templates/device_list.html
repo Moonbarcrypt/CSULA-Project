@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IoT Device List</title>
+    <title>Devices in Network</title> {# Updated Title #}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -27,6 +27,13 @@
             font-size: 2.8em; 
             margin-bottom: 20px; 
             font-weight: 700; 
+        }
+        h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 600;
         }
         p {
             color: #555;
@@ -62,83 +69,72 @@
             background-color: #34495e; 
             text-decoration: none; 
         }
-        table { 
-            width: 95%; 
-            border-collapse: collapse; 
-            margin-top: 1.5em; 
-            margin-left: auto; 
-            margin-right: auto; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            overflow: hidden; 
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 12px 15px; 
-            text-align: left; 
-            font-size: 0.95em;
-        }
-        th { 
-            background-color: #e9ecef; 
-            color: #333; 
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        tr:nth-child(even) { 
-            background-color: #f8f9fa; 
-        } 
-        tr:hover {
-            background-color: #e2f0f7; 
-        }
-        .no-entries { 
-            text-align: center; 
-            color: #888; 
-            margin-top: 1em; 
-            padding: 20px;
+        table {
+            width: 100%; /* Changed from 95% to 100% for better responsiveness */
+            border-collapse: collapse;
+            margin-top: 20px;
             background-color: #fdfdfd;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
         }
-        .link-group { 
-            text-align: center; 
-            margin-top: 40px; 
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
         }
-        .link-group a { 
-            background-color: #3498db; 
-            color: white;
-            padding: 12px 25px;
-            text-decoration: none;
-            border-radius: 8px;
+        th {
+            background-color: #e9ecef;
+            color: #333;
             font-weight: 600;
-            font-size: 1em;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            font-size: 0.9em;
         }
-        .link-group a:hover {
-            background-color: #217dbb; 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        tr:last-child td {
+            border-bottom: none;
         }
-        .action-buttons form { 
-            display: inline-block; 
-            margin-left: 5px; 
+        tr:hover {
+            background-color: #f5f5f5;
         }
-        .action-buttons button { 
-            background: none; 
-            border: none; 
-            padding: 0; 
-            font-size: 0.9em; 
-            cursor: pointer; 
-            color: #007bff; 
-            text-decoration: underline; 
-            transition: color 0.2s ease;
+        .action-button {
+            background-color: #007bff; /* Blue */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+            display: inline-block; /* For spacing between buttons */
+            margin-right: 5px;
         }
-        .action-buttons button:hover { 
-            color: #0056b3; 
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+        .action-button.delete {
+            background-color: #dc3545; /* Red */
+        }
+        .action-button.delete:hover {
+            background-color: #c82333;
+        }
+        .action-button.toggle-whitelist {
+            background-color: #28a745; /* Green */
+        }
+        .action-button.toggle-whitelist:hover {
+            background-color: #218838;
+        }
+        .action-button.toggle-watchlist {
+            background-color: #ffc107; /* Yellow */
+            color: #333;
+        }
+        .action-button.toggle-watchlist:hover {
+            background-color: #e0a800;
+        }
+        .no-devices {
+            color: #777;
+            font-style: italic;
+            margin-top: 20px;
         }
         .flash-message { 
             padding: 15px; 
@@ -158,6 +154,11 @@
             color: #721c24; 
             border: 1px solid #f5c6cb; 
         }
+        .flash-message.info { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
+        }
         footer {
             margin-top: auto; 
             padding: 20px;
@@ -168,108 +169,36 @@
             border-top: 1px solid #ccc;
         }
 
-        /* Watchlisted Devices Section */
-        .watchlisted-section { 
-            background-color: #e0e0e0; 
-            border: 1px solid #bdbdbd; 
-            color: #424242; 
-            padding: 20px;
-            margin-top: 30px; 
-            border-radius: 8px;
-            text-align: left;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        /* Section Specific Styles */
+        .device-section { margin-bottom: 3em; }
+        .device-section h2 { 
+            color: #2c3e50; 
+            font-size: 2em; 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+            text-align: left; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 5px;
         }
-        .watchlisted-section h2 { 
-            color: #424242;
-            text-align: center;
-            font-size: 1.8em;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        .watchlisted-section ul { 
-            list-style-type: none;
-            margin-left: 0;
-            padding-left: 0;
-            text-align: center;
-        }
-        .watchlisted-section li { 
-            background-color: #eeeeee; 
-            border: 1px solid #d0d0d0;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap; /* Allow buttons to wrap on small screens */
-        }
-        .watchlisted-section li .mac-address { 
-            flex-grow: 1;
-            text-align: left;
-        }
-        .watchlisted-section li .button-group {
-            display: flex;
-            gap: 10px; /* Space between buttons */
-            margin-top: 5px; /* Space from MAC on small screens */
-        }
-        .watchlisted-section li .unwatchlist-button,
-        .watchlisted-section li .register-from-watchlist-button { /* New button class */
-            background-color: #007bff; 
+        .device-section.watchlist h2 { border-bottom-color: #e74c3c; } /* Red for watchlist */
+        .toggle-button {
+            background-color: #3498db; /* Default blue for toggle buttons */
             color: white;
-            padding: 8px 15px;
+            padding: 5px 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.85em;
             transition: background-color 0.2s ease;
         }
-        .watchlisted-section li .unwatchlist-button:hover { 
-            background-color: #0056b3; 
-        }
-        .watchlisted-section li .unwatchlist-button:disabled { 
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .watchlisted-section li .register-from-watchlist-button { /* New button style */
-            background-color: #28a745; /* Green for Register */
-        }
-        .watchlisted-section li .register-from-watchlist-button:hover {
-            background-color: #218838;
-        }
-        .watchlisted-section li .register-from-watchlist-button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .watchlisted-section li {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .watchlisted-section li .mac-address {
-                margin-bottom: 8px;
-                width: 100%;
-            }
-            .watchlisted-section li .button-group {
-                flex-direction: column;
-                width: 100%;
-                gap: 5px;
-            }
-            .watchlisted-section li .unwatchlist-button,
-            .watchlisted-section li .register-from-watchlist-button {
-                width: 100%;
-            }
-        }
+        .toggle-button:hover { background-color: #217dbb; }
     </style>
 </head>
 <body>
     {% include 'base_navbar.html' %} 
 
     <div class="container">
-        <h1>IoT Device List</h1>
+        <h1>Devices in Network</h1> {# Updated Main Heading #}
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -279,61 +208,84 @@
             {% endif %}
         {% endwith %}
 
-        <h2>Whitelisted Devices</h2>
-        {% if devices %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>User Name</th> 
-                        <th>Assigned Number</th>
-                        <th>Device Name (Raw)</th> 
-                        <th>Encrypted Device Name</th> 
-                        <th>MAC Address</th> 
-                        <th>Actions</th> 
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for device in devices %}
+        <div class="device-section">
+            <h2>Network Devices</h2> {# Renamed from Whitelisted Devices #}
+            {% if whitelisted_devices %}
+                <table>
+                    <thead>
                         <tr>
-                            <td>{{ device.user_name }}</td> 
-                            <td>{{ device.assigned_number }}</td>
-                            <td>{{ device.device_name }}</td> 
-                            <td>{{ device.encrypted_device_name }}</td> 
-                            <td>{{ device.mac_address }}</td> 
-                            <td class="action-buttons">
-                                <a href="{{ url_for('edit_device', device_id=device.id) }}">Edit</a>
-                                <form action="{{ url_for('delete_device', device_id=device.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this device?');">
-                                    <button type="submit">Delete</button>
-                                </form>
-                            </td>
+                            <th>User Name</th> 
+                            <th>Device Name</th> 
+                            <th>MAC Address</th> 
+                            <th>Actions</th> 
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="no-entries">No devices have been whitelisted yet.</p>
-        {% endif %}
+                    </thead>
+                    <tbody>
+                        {% for device in whitelisted_devices %}
+                            <tr>
+                                <td>{{ device.user_name }}</td> 
+                                <td>{{ device.device_name }}</td> 
+                                <td>{{ device.mac_address }}</td> 
+                                <td class="action-buttons">
+                                    {% if device %} {# Defensive check #}
+                                        <a href="{{ url_for('edit_device', device_id=device.id) }}">Edit</a>
+                                        <form action="{{ url_for('delete_device', device_id=device.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this device?');">
+                                            <button type="submit">Delete</button>
+                                        </form>
+                                        <form action="{{ url_for('toggle_watchlist', device_id=device.id) }}" method="post" style="display:inline;">
+                                            <button type="submit" class="toggle-button">Add to Watchlist</button>
+                                        </form>
+                                    {% else %}
+                                        <span>Error: Device data missing.</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-entries">No devices have been whitelisted yet.</p>
+            {% endif %}
+        </div>
 
-        {# Section for Watchlisted Devices #}
-        <div id="watchlistedResults" class="watchlisted-section" style="margin-top: 40px;">
-            <h2>🕵️‍♂️ Watchlisted Devices</h2>
-            <p>The following devices are currently on your watchlist for monitoring:</p>
-            <ul id="watchlistedMacList">
-                {% if watchlisted_macs %}
-                    {% for mac in watchlisted_macs %}
-                        <li>
-                            <span class="mac-address">{{ mac }}</span>
-                            <div class="button-group">
-                                <button class="unwatchlist-button" data-mac="{{ mac }}">Remove from Watchlist</button>
-                                <button class="register-from-watchlist-button" data-mac="{{ mac }}">Register Device</button> {# New Register button #}
-                            </div>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    <li>No devices currently on watchlist.</li>
-                {% endif %}
-            </ul>
-            <p>Register a watchlisted device to automatically remove it from the watchlist.</p>
+        <div class="device-section watchlist">
+            <h2>New Devices on Network</h2> {# Renamed from Watchlisted Devices #}
+            {% if watchlist_devices %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Name</th> 
+                            <th>Device Name</th> 
+                            <th>MAC Address</th> 
+                            <th>Actions</th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in watchlist_devices %}
+                            <tr>
+                                <td>{{ device.user_name }}</td> 
+                                <td>{{ device.device_name }}</td> 
+                                <td>{{ device.mac_address }}</td> 
+                                <td class="action-buttons">
+                                    {% if device %} {# Defensive check #}
+                                        <a href="{{ url_for('edit_device', device_id=device.id) }}">Edit</a>
+                                        <form action="{{ url_for('delete_device', device_id=device.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this device?');">
+                                            <button type="submit">Delete</button>
+                                        </form>
+                                        <form action="{{ url_for('toggle_whitelist', device_id=device.id) }}" method="post" style="display:inline;">
+                                            <button type="submit" class="toggle-button">Add to Whitelist</button>
+                                        </form>
+                                    {% else %}
+                                        <span>Error: Device data missing.</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-entries">No devices are currently on the watchlist.</p>
+            {% endif %}
         </div>
         
         <div class="link-group">
@@ -346,68 +298,5 @@
     <footer>
         <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
     </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const watchlistedMacList = document.getElementById('watchlistedMacList');
-
-            // Function to handle removing from watchlist
-            async function removeDeviceFromWatchlist(macToRemove) {
-                try {
-                    const response = await fetch('/api/remove_from_watchlist', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ mac_address: macToRemove }),
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        console.log(result.message);
-                        // Remove the item from the DOM
-                        const itemToRemove = watchlistedMacList.querySelector(`li button[data-mac="${macToRemove}"]`).closest('li');
-                        if (itemToRemove) {
-                            itemToRemove.remove();
-                        }
-                        // If no items left, show "No devices currently on watchlist"
-                        if (watchlistedMacList.children.length === 0) {
-                            watchlistedMacList.innerHTML = '<li>No devices currently on watchlist.</li>';
-                        }
-                        alert('Device removed from watchlist successfully!'); 
-
-                    } else {
-                        console.error('Failed to remove from watchlist:', result.message);
-                        alert('Failed to remove device from watchlist: ' + result.message);
-                    }
-                } catch (error) {
-                    console.error('Network error during watchlist removal:', error);
-                    alert('Network error during watchlist removal. See console for details.');
-                }
-            }
-
-            // Event delegation for "Remove from Watchlist" buttons on this page
-            watchlistedMacList.addEventListener('click', async function(event) {
-                if (event.target.classList.contains('unwatchlist-button')) {
-                    const button = event.target;
-                    const macToRemove = button.dataset.mac;
-                    
-                    button.disabled = true; 
-                    button.textContent = 'Removing...'; 
-
-                    await removeDeviceFromWatchlist(macToRemove);
-                    
-                    button.disabled = false; 
-                    button.textContent = 'Remove from Watchlist'; 
-                } else if (event.target.classList.contains('register-from-watchlist-button')) { // New handler for Register button
-                    const button = event.target;
-                    const macToRegister = button.dataset.mac;
-                    
-                    // Redirect to the register page with the MAC address as a query parameter
-                    window.location.href = `/register?mac=${macToRegister}`;
-                }
-            });
-        });
-    </script>
 </body>
 </html>
