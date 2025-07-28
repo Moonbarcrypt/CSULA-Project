@@ -3,7 +3,8 @@
     <ul style="list-style-type: none; margin: 0; padding: 0; display: flex; justify-content: center;">
         <li style="margin: 0 15px;"><a href="{{ url_for('index') }}" style="color: white; text-decoration: none; font-weight: 600; padding: 8px 12px; border-radius: 6px; transition: background-color 0.3s ease;">Home</a></li>
         <li style="margin: 0 15px;"><a href="{{ url_for('register') }}" style="color: white; text-decoration: none; font-weight: 600; padding: 8px 12px; border-radius: 6px; transition: background-color 0.3s ease;">Register Device</a></li>
-        <li style="margin: 0 15px;"><a href="{{ url_for('whitelist') }}" style="color: white; text-decoration: none; font-weight: 600; padding: 8px 12px; border-radius: 6px; transition: background-color 0.3s ease;">View Whitelist</a></li>
+        {# Updated link text and endpoint #}
+        <li style="margin: 0 15px;"><a href="{{ url_for('device_list_page') }}" style="color: white; text-decoration: none; font-weight: 600; padding: 8px 12px; border-radius: 6px; transition: background-color 0.3s ease;">Device List</a></li>
         <li><a href="{{ url_for('network_scan_page') }}" style="color: white; text-decoration: none; font-weight: 600; padding: 8px 12px; border-radius: 6px; transition: background-color 0.3s ease;">Network Scan</a></li>
     </ul>
 </nav>
