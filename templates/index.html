@@ -145,7 +145,8 @@
 
         <div class="action-buttons">
             <a href="{{ url_for('register') }}">Register New Device</a>
-            <a href="{{ url_for('whitelist') }}">View Whitelist</a>
+            {# Updated link text and endpoint #}
+            <a href="{{ url_for('device_list_page') }}">View Device List</a>
             <a href="{{ url_for('network_scan_page') }}">Network Scan</a>
         </div>
     </div>
