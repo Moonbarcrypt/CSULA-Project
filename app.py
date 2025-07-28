@@ -34,12 +34,10 @@ class Device(db.Model):
     def __repr__(self):
         return f"Device('{self.user_name}', '{self.assigned_number}', '{self.device_name}', '{self.encrypted_device_name}', '{self.mac_address}')"
 
-# RENAMED MODEL: Defines the 'watchlisted_device' table structure
+# Defines the 'watchlisted_device' table structure
 class WatchlistedDevice(db.Model):
-    # Explicitly set table name to avoid issues if class name was QuarantinedDevice before
     __tablename__ = 'watchlisted_device' 
     id = db.Column(db.Integer, primary_key=True)
-    # Stores the MAC address of the device that has been "watchlisted"
     mac_address = db.Column(db.String(17), unique=True, nullable=False)
 
     def __repr__(self):
@@ -78,10 +76,6 @@ def get_network_mac_addresses():
     for _ in range(3): # Generate 3 random "unregistered" MACs
         detected_macs.add(generate_random_mac())
 
-    # To make the demo more dynamic, let's also add some MACs from currently
-    # registered devices to the 'detected' list, so the "unregistered" list
-    # only shows truly new ones.
-    
     return detected_macs
 
 # --- Routes Definition ---
@@ -145,7 +139,7 @@ def register_device():
             else:
                 flash('Device registered successfully!', 'success') 
             
-            return redirect(url_for('whitelist'))
+            return redirect(url_for('device_list_page')) # Redirect to the new list page
         except Exception as e:
             db.session.rollback() 
             app.logger.error(f"Error registering device: {e}") 
@@ -155,13 +149,15 @@ def register_device():
         flash('Please enter all required fields.', 'error') 
         return render_template('register.html', error="Please enter all required fields.")
 
-# Displays the list of whitelisted devices
-@app.route('/whitelist')
-def whitelist():
+# RENAMED ROUTE: Displays the list of whitelisted and watchlisted devices
+@app.route('/devices') # Changed URL path for clarity
+def device_list_page(): # Renamed endpoint function
     registered_devices = Device.query.order_by(Device.assigned_number).all()
+    watchlisted_devices = WatchlistedDevice.query.order_by(WatchlistedDevice.mac_address).all() # Fetch watchlisted devices
     return render_template(
-        'whitelist.html', 
-        devices=registered_devices
+        'device_list.html', # Render the new template
+        devices=registered_devices,
+        watchlisted_macs=[d.mac_address for d in watchlisted_devices] # Pass watchlisted MACs
     )
 
 # Displays the Network Scan page (initial load)
@@ -173,7 +169,7 @@ def network_scan_page():
 @app.route('/api/scan_network', methods=['GET'])
 def api_scan_network():
     registered_macs = {d.mac_address for d in Device.query.all()}
-    watchlisted_macs_db = {q.mac_address for q in WatchlistedDevice.query.all()} # Get currently watchlisted MACs
+    watchlisted_macs_db = {q.mac_address for q in WatchlistedDevice.query.all()} 
     
     detected_macs = get_network_mac_addresses()
     
@@ -191,7 +187,7 @@ def api_scan_network():
         watchlisted_macs=list(watchlisted_macs_db)
     )
 
-# NEW API ROUTE: To add a device to watchlist
+# API ROUTE: To add a device to watchlist
 @app.route('/api/add_to_watchlist', methods=['POST'])
 def api_add_to_watchlist():
     mac_address = request.json.get('mac_address')
@@ -199,11 +195,9 @@ def api_add_to_watchlist():
         return jsonify(success=False, message="MAC address is required."), 400
 
     try:
-        # Check if already watchlisted
         if WatchlistedDevice.query.filter_by(mac_address=mac_address).first():
             return jsonify(success=False, message=f"MAC {mac_address} is already on the watchlist."), 409 
 
-        # Add to watchlisted devices
         new_watchlisted = WatchlistedDevice(mac_address=mac_address)
         db.session.add(new_watchlisted)
         db.session.commit()
@@ -213,7 +207,7 @@ def api_add_to_watchlist():
         app.logger.error(f"Error adding MAC {mac_address} to watchlist: {e}")
         return jsonify(success=False, message="An error occurred while adding to watchlist."), 500
 
-# NEW API ROUTE: To remove a device from watchlist
+# API ROUTE: To remove a device from watchlist
 @app.route('/api/remove_from_watchlist', methods=['POST'])
 def api_remove_from_watchlist():
     mac_address = request.json.get('mac_address')
@@ -237,7 +231,10 @@ def api_remove_from_watchlist():
 # Handles deletion of a specific device (POST request)
 @app.route('/delete/<int:device_id>', methods=['POST'])
 def delete_device(device_id):
-    device = Device.query.get_or_404(device_id) 
+    device = db.session.get(Device, device_id) 
+    if device is None:
+        flash('Device not found.', 'error')
+        return redirect(url_for('device_list_page')) # Redirect to new list page
     try:
         db.session.delete(device)
         db.session.commit()
@@ -246,15 +243,15 @@ def delete_device(device_id):
         db.session.rollback()
         app.logger.error(f"Error deleting device {device_id}: {e}")
         flash('An error occurred while deleting the device.', 'error')
-    return redirect(url_for('whitelist'))
+    return redirect(url_for('device_list_page')) # Redirect to new list page
 
 # Handles displaying and processing the form for editing a specific device
 @app.route('/edit/<int:device_id>', methods=['GET', 'POST'])
 def edit_device(device_id):
-    device = db.session.get(Device, device_id) # Use db.session.get for primary key lookup
+    device = db.session.get(Device, device_id) 
     if device is None:
         flash('Device not found.', 'error')
-        return redirect(url_for('whitelist'))
+        return redirect(url_for('device_list_page')) # Redirect to new list page
 
     if request.method == 'POST':
         user_name = request.form['user_name'].strip()
@@ -267,7 +264,7 @@ def edit_device(device_id):
             
             db.session.commit()
             flash('Device updated successfully!', 'success')
-            return redirect(url_for('whitelist'))
+            return redirect(url_for('device_list_page')) # Redirect to new list page
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error updating device {device_id}: {e}")
@@ -302,7 +299,7 @@ if __name__ == '__main__':
                     {'user_name': 'Dichill', 'device_name': 'Alexa', 'assigned_number': 1001, 'mac_address': generate_random_mac()},
                     {'user_name': 'Juan', 'device_name': 'Connected Camera', 'assigned_number': 1002, 'mac_address': generate_random_mac()},
                     {'user_name': 'Fahat', 'device_name': 'Smart TV', 'assigned_number': 1003, 'mac_address': generate_random_mac()},
-                    {'user_name': 'Charlie', 'device_name': 'Ring Camera', 'assigned_number': 1004, 'mac_address': generate_random_mac()}
+                    {'user_name': 'Blake', 'device_name': 'Ring Camera', 'assigned_number': 1004, 'mac_address': generate_random_mac()}
                 ]
                 for data in devices_to_add:
                     try:
