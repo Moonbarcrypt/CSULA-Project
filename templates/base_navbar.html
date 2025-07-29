@@ -4,11 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Navbar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Bell Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { margin: 0; font-family: 'Inter', sans-serif; } /* Ensure Inter font is applied */
+        :root {
+            --primary-blue: #4285F4; 
+            --darker-blue: #3367D6; 
+            --white-background: #FFFFFF;
+            --navbar-bg: #343A40; 
+            --dark-text: #212529;
+            --warning-red: #EA4335; /* For alert count */
+        }
+
+        body { margin: 0; font-family: 'Inter', sans-serif; } 
         nav { 
-            background-color: #2c3e50; 
+            background-color: var(--navbar-bg); 
             padding: 1em 0; 
             margin-bottom: 0; 
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -19,33 +30,81 @@
             padding: 0; 
             display: flex; 
             justify-content: center; 
+            align-items: center; 
         }
         nav ul li { 
             margin: 0 15px; 
+            position: relative; 
         }
         nav ul li a { 
-            color: white; 
+            color: var(--white-background); 
             text-decoration: none; 
-            font-weight: 600; 
-            padding: 8px 12px;
+            font-weight: 500; 
+            padding: 8px 12px; 
             border-radius: 6px;
-            transition: background-color 0.3s ease; 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+            display: flex; 
+            align-items: center;
+            gap: 5px; /* Space between icon and text */
         }
+        /* Removed specific padding-right for alerts-link as badge is now on the icon */
+        /* nav ul li a.alerts-link {
+            padding-right: 30px; 
+            position: relative; 
+        } */
+
         nav ul li a:hover { 
-            background-color: #34495e; 
+            background-color: var(--primary-blue); 
+            color: var(--white-background); 
             text-decoration: none; 
         }
+        /* --- Alert Badge Style (Over Bell Icon) --- */
+        .alert-badge {
+            position: absolute;
+            top: 2px; /* Adjusted to sit higher, over the bell */
+            right: 0px; /* Adjusted to sit over the bell icon's right edge */
+            background-color: var(--warning-red);
+            color: white;
+            border-radius: 4px; /* Still square */
+            padding: 0px 4px; /* Reduced padding for a tighter fit on the icon */
+            font-size: 0.6em; /* Small font size for the number */
+            font-weight: 700;
+            min-width: 14px; /* Adjusted min-width */
+            min-height: 14px; /* Adjusted min-height */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            line-height: 1; 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
+            z-index: 10; 
+            transform: translate(50%, -50%); /* Shift by 50% of its own width/height to center on top-right of parent */
+        }
+        /* --- END Alert Badge Style --- */
     </style>
 </head>
 <body>
     <nav>
         <ul>
             <li><a href="{{ url_for('index') }}">Home</a></li>
-            <li><a href="{{ url_for('device_list_page') }}">Device List</a></li>
-            <li><a href="{{ url_for('register') }}">Register Device</a></li>
-            <li><a href="{{ url_for('network_scan_page') }}">Network Scan</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('device_list_page') }}">Device List</a></li>
+                <li><a href="{{ url_for('register') }}">Register Device</a></li>
+                <li><a href="{{ url_for('network_scan_page') }}">Network Scan</a></li>
+                <li>
+                    <a href="{{ url_for('alerts_page') }}" class="alerts-link"> 
+                        <i class="fas fa-bell"></i> Alerts 
+                        {% if unread_alerts_count > 0 %}
+                            <span class="alert-badge">{{ unread_alerts_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li><a href="{{ url_for('logout') }}">Logout ({{ current_user.username }})</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register_user') }}">Register</a></li>
+            {% endif %}
         </ul>
     </nav>
-    {% block content %}{% endblock %} {# This block is where child templates will inject their content #}
+    {% block content %}{% endblock %} 
 </body>
 </html>

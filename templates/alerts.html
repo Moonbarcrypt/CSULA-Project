@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register Account</title>
+    <title>Alerts</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-blue: #4285F4; 
             --darker-blue: #3367D6; 
+            --secondary-green: #34A853; 
+            --warning-red: #EA4335; 
             --light-background: #F8F9FA; 
             --white-background: #FFFFFF;
             --dark-text: #212529; 
@@ -34,7 +36,7 @@
         }
         .container { 
             padding: 40px 20px; 
-            max-width: 500px; 
+            max-width: 900px; 
             margin: 40px auto; 
             background-color: var(--white-background); 
             border-radius: 12px; 
@@ -48,6 +50,13 @@
             margin-bottom: 20px; 
             font-weight: 700; 
         }
+        h2 {
+            color: var(--dark-text);
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
         p {
             color: var(--medium-text);
             font-size: 1.1em;
@@ -55,49 +64,86 @@
             margin-bottom: 25px;
             font-weight: 400;
         }
-        form {
-            text-align: left; 
-            padding: 20px;
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            background-color: var(--white-background); 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-top: 30px;
+        nav { 
+            background-color: var(--navbar-bg); 
+            padding: 1em 0; 
+            margin-bottom: 0; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark-text);
+        nav ul { 
+            list-style-type: none; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
         }
-        input[type="text"], input[type="password"] { 
-            width: calc(100% - 20px); 
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-light);
-            border-radius: 5px;
-            font-size: 1em;
-            box-sizing: border-box; 
-            color: var(--dark-text);
-            background-color: var(--white-background);
-            font-weight: 400;
+        nav ul li { 
+            margin: 0 15px; 
         }
-        button[type="submit"] {
+        nav ul li a { 
+            color: var(--white-background); 
+            text-decoration: none; 
+            font-weight: 500; 
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease; 
+        }
+        nav ul li a:hover { 
             background-color: var(--primary-blue); 
-            color: var(--white-background);
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: var(--white-background); 
+            text-decoration: none; 
         }
-        button[type="submit"]:hover {
-            background-color: var(--darker-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        .alerts-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .alerts-list li {
+            background-color: var(--white-background);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .alerts-list li.read {
+            background-color: var(--light-background);
+            opacity: 0.8;
+        }
+        .alert-content {
+            flex-grow: 1;
+        }
+        .alert-message {
+            font-weight: 500;
+            color: var(--dark-text);
+            margin-bottom: 5px;
+        }
+        .alert-timestamp {
+            font-size: 0.85em;
+            color: var(--medium-text);
+        }
+        .mark-read-button {
+            background-color: var(--secondary-green);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+        .mark-read-button:hover {
+            background-color: #288c42;
+        }
+        .no-alerts {
+            color: var(--medium-text);
+            font-style: italic;
+            margin-top: 20px;
         }
         .flash-message { 
             padding: 15px; 
@@ -122,21 +168,6 @@
             color: var(--info-text); 
             border: 1px solid #bee5eb; 
         }
-        .link-text {
-            margin-top: 20px;
-            font-size: 0.95em;
-            color: var(--medium-text);
-        }
-        .link-text a {
-            color: var(--primary-blue);
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s ease;
-        }
-        .link-text a:hover {
-            color: var(--darker-blue);
-            text-decoration: underline;
-        }
         footer {
             margin-top: auto; 
             padding: 20px;
@@ -152,16 +183,17 @@
         @media (max-width: 768px) {
             h1 { font-size: 2.2em; }
             .container { margin: 20px auto; padding: 20px; }
-            form { padding: 15px; }
-            input[type="text"], input[type="password"] { width: calc(100% - 10px); }
-            button[type="submit"] { padding: 10px 20px; font-size: 1em; }
+            .alerts-list li { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .mark-read-button { width: 100%; }
         }
     </style>
 </head>
 <body>
+    {% include 'base_navbar.html' %}
+
     <div class="container">
-        <h1>Register Account</h1>
-        <p>Create a new account to manage your devices.</p>
+        <h1>Your Alerts</h1>
+        <p>Review important notifications about your network and devices.</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -171,17 +203,25 @@
             {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('register_user') }}" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="{{ username if username else '' }}" required><br><br>
-
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            
-            <button type="submit">Register</button>
-        </form>
-
-        <p class="link-text">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        {% if alerts %}
+            <ul class="alerts-list">
+                {% for alert in alerts %}
+                    <li class="{% if alert.is_read %}read{% endif %}">
+                        <div class="alert-content">
+                            <div class="alert-message">{{ alert.message }}</div>
+                            <div class="alert-timestamp">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                        </div>
+                        {% if not alert.is_read %}
+                            <form action="{{ url_for('mark_alert_read', alert_id=alert.id) }}" method="post" style="margin-left: 15px;">
+                                <button type="submit" class="mark-read-button">Mark as Read</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-alerts">You have no alerts at this time.</p>
+        {% endif %}
     </div>
 
     <footer>

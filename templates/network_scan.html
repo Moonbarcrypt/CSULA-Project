@@ -2,40 +2,70 @@
 <html>
 <head>
     <title>Network Scan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-blue: #4285F4; 
+            --darker-blue: #3367D6; 
+            --secondary-green: #34A853; 
+            --warning-red: #EA4335; 
+            --light-background: #F8F9FA; 
+            --white-background: #FFFFFF;
+            --dark-text: #212529; 
+            --medium-text: #6C757D; 
+            --navbar-bg: #343A40; 
+            --border-light: #E9ECEF;
+            --success-bg: #D4EDDA;
+            --success-text: #155724;
+            --error-bg: #F8D7DA;
+            --error-text: #721C24;
+            --info-bg: #D1ECF1;
+            --info-text: #0C5460;
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
             margin: 0; 
-            background-color: #f0f2f5; 
+            background-color: var(--light-background); 
             display: flex;
             flex-direction: column;
             min-height: 100vh; 
+            color: var(--dark-text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         .container { 
             padding: 40px 20px; 
             max-width: 900px; 
             margin: 40px auto; 
-            background-color: #ffffff; 
+            background-color: var(--white-background); 
             border-radius: 12px; 
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); 
             text-align: center; 
             flex-grow: 1; 
         }
         h1 { 
-            color: #2c3e50; 
+            color: var(--dark-text); 
             font-size: 2.8em; 
             margin-bottom: 20px; 
             font-weight: 700; 
         }
+        h2 {
+            color: var(--dark-text);
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
         p {
-            color: #555;
+            color: var(--medium-text);
             font-size: 1.1em;
             line-height: 1.6;
             margin-bottom: 25px;
+            font-weight: 400;
         }
         nav { 
-            background-color: #2c3e50; 
+            background-color: var(--navbar-bg); 
             padding: 1em 0; 
             margin-bottom: 0; 
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -51,20 +81,21 @@
             margin: 0 15px; 
         }
         nav ul li a { 
-            color: white; 
+            color: var(--white-background); 
             text-decoration: none; 
-            font-weight: 600; 
+            font-weight: 500; 
             padding: 8px 12px;
             border-radius: 6px;
-            transition: background-color 0.3s ease; 
+            transition: background-color 0.3s ease, color 0.3s ease; 
         }
         nav ul li a:hover { 
-            background-color: #34495e; 
+            background-color: var(--primary-blue); 
+            color: var(--white-background); 
             text-decoration: none; 
         }
         .scan-button {
-            background-color: #007bff; /* Blue */
-            color: white;
+            background-color: var(--primary-blue); 
+            color: var(--white-background);
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
@@ -76,7 +107,7 @@
             margin-top: 20px;
         }
         .scan-button:hover {
-            background-color: #0056b3;
+            background-color: var(--darker-blue);
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
@@ -84,19 +115,21 @@
             width: 100%; 
             border-collapse: collapse;
             margin-top: 30px;
-            background-color: #fdfdfd;
+            background-color: var(--white-background); 
             border-radius: 8px;
             overflow: hidden; 
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
         }
         th, td {
             padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-light);
             text-align: left;
+            color: var(--dark-text);
+            font-weight: 400;
         }
         th {
-            background-color: #e9ecef;
-            color: #333;
+            background-color: var(--light-background);
+            color: var(--dark-text);
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.9em;
@@ -105,31 +138,29 @@
             border-bottom: none;
         }
         tr:hover {
-            background-color: #f5f5f5;
+            background-color: #f0f0f0;
         }
-        /* --- Button Spacing Fixes --- */
         .action-cell {
-            white-space: nowrap; /* Prevent text wrapping in cell */
-            min-width: 120px; /* Ensure minimum width for the action column */
+            white-space: nowrap; 
+            min-width: 120px; 
         }
-        .register-button, .edit-button { /* Combined styles for both buttons */
-            background-color: #28a745; /* Green */
-            color: white;
-            padding: 8px 12px; /* Adjusted padding for better fit */
+        .register-button, .edit-button { 
+            background-color: var(--primary-blue); 
+            color: var(--white-background);
+            padding: 8px 12px; 
             border: none;
             border-radius: 6px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 0.85em; /* Slightly smaller font for compactness */
+            font-size: 0.85em; 
             transition: background-color 0.3s ease;
-            display: inline-block; /* Allow side-by-side if needed, but flex below handles it */
-            margin: 2px; /* Small margin around buttons */
+            display: inline-block; 
+            margin: 2px; 
+            font-weight: 500;
         }
         .register-button:hover, .edit-button:hover {
-            background-color: #218838;
+            background-color: var(--darker-blue);
         }
-        /* --- END Button Spacing Fixes --- */
-
         .alert {
             padding: 15px;
             margin-top: 20px;
@@ -139,18 +170,18 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
         }
         .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: var(--error-bg);
+            color: var(--error-text);
             border: 1px solid #f5c6cb;
         }
         .alert-success {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: var(--success-bg);
+            color: var(--success-text);
             border: 1px solid #c3e6cb;
         }
         .alert-info { 
-            background-color: #d1ecf1; 
-            color: #0c5460; 
+            background-color: var(--info-bg); 
+            color: var(--info-text); 
             border: 1px solid #bee5eb; 
         }
         .flash-message { 
@@ -162,42 +193,43 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
         }
         .flash-message.success { 
-            background-color: #d4edda; 
-            color: #155724; 
+            background-color: var(--success-bg); 
+            color: var(--success-text); 
             border: 1px solid #c3e6cb; 
         }
         .flash-message.error { 
-            background-color: #f8d7da; 
-            color: #721c24; 
+            background-color: var(--error-bg); 
+            color: var(--error-text); 
             border: 1px solid #f5c6cb; 
         }
         .flash-message.info { 
-            background-color: #d1ecf1; 
-            color: #0c5460; 
+            background-color: var(--info-bg); 
+            color: var(--info-text); 
             border: 1px solid #bee5eb; 
         }
         footer {
             margin-top: auto; 
             padding: 20px;
             text-align: center;
-            color: #777;
+            color: var(--medium-text);
             font-size: 0.9em;
-            background-color: #e0e0e0; 
-            border-top: 1px solid #ccc;
+            background-color: var(--white-background); 
+            border-top: 1px solid var(--border-light);
+            font-weight: 400;
         }
 
         /* Status colors for scan results */
-        .scan-status-known { color: #28a745; font-weight: 600; } /* Green */
-        .scan-status-unknown { color: #dc3545; font-weight: 600; } /* Red */
+        .scan-status-known { color: var(--secondary-green); font-weight: 600; } 
+        .scan-status-unknown { color: var(--warning-red); font-weight: 600; } 
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
             h1 { font-size: 2.2em; }
             .container { margin: 20px auto; padding: 20px; }
-            th, td { padding: 8px; font-size: 0.75em; } /* Further reduce padding/font on small screens */
+            th, td { padding: 8px; font-size: 0.75em; } 
             .scan-button { padding: 10px 20px; font-size: 1em; }
-            .register-button, .edit-button { padding: 6px 8px; font-size: 0.7em; } /* Adjust button size */
-            .action-cell { min-width: 90px; } /* Adjust min-width for action column */
+            .register-button, .edit-button { padding: 6px 8px; font-size: 0.7em; } 
+            .action-cell { min-width: 90px; } 
         }
     </style>
 </head>
@@ -222,11 +254,7 @@
 
         {% if scan_results %}
             <h2>Scan Results</h2>
-            {% if potential_intrusion_alert %}
-                <div class="alert alert-error">
-                    <strong>Potential Intrusion Alert!</strong> New devices detected on your network.
-                </div>
-            {% endif %}
+            {# Removed the direct display of potential_intrusion_alert here. It's now handled by flash messages. #}
             <table>
                 <thead>
                     <tr>
@@ -258,11 +286,11 @@
                             </span>
                         </td>
                         <td>{{ device.last_seen }}</td> 
-                        <td class="action-cell"> {# Added class for styling #}
+                        <td class="action-cell"> 
                             {% if device.status == 'Unknown' %}
                                 <a href="{{ url_for('register', mac=device.mac) }}" class="register-button">Register Device</a> 
                             {% else %}
-                                <a href="{{ url_for('edit_device', device_id=device.device_id) }}" class="edit-button">Edit Details</a> {# Renamed class for clarity #}
+                                <a href="{{ url_for('edit_device', device_id=device.device_id) }}" class="edit-button">Edit Details</a> 
                             {% endif %}
                         </td>
                     </tr>
