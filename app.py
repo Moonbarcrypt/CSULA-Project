@@ -1,4 +1,4 @@
-import os
+import os # This line ensures the 'os' module is available
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import re # Import regular expression module for MAC validation
@@ -35,7 +35,7 @@ class Device(db.Model):
 
 # Helper function to validate MAC address format
 def is_valid_mac(mac):
-    # Regex for MAC address (e.g., AA:BB:CC:DD:EE:FF or AA-BB-CC-DD-EE-FF)
+    # Regex for MAC address (e.g., AA:BB:CC:DD:EE:FF or AA-BB-CC-DD:EE:FF)
     if mac is None:
         return True # Allow None if MAC is optional
     return re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac)
@@ -81,14 +81,6 @@ def device_list_page():
     whitelisted_devices = Device.query.filter_by(is_whitelisted=True).all()
     watchlist_devices = Device.query.filter_by(is_watchlist=True).all()
     
-    # Optional: Print to console for debugging if issues persist
-    # print(f"Whitelisted Devices: {whitelisted_devices}")
-    # for dev in whitelisted_devices:
-    #     print(f"  - Device ID: {dev.id}, Name: {dev.device_name}")
-    # print(f"Watchlisted Devices: {watchlist_devices}")
-    # for dev in watchlist_devices:
-    #     print(f"  - Device ID: {dev.id}, Name: {dev.device_name}")
-
     return render_template('device_list.html', 
                            whitelisted_devices=whitelisted_devices,
                            watchlist_devices=watchlist_devices)
@@ -104,47 +96,30 @@ def register():
         # MAC address input is now optional; generate if not provided
         mac_address = request.form['mac_address'].strip().upper() if request.form['mac_address'] else None
         
-        # Validate MAC address format if provided
         if mac_address and not is_valid_mac(mac_address):
             flash('Invalid MAC address format. Please use AA:BB:CC:DD:EE:FF or AA-BB-CC-DD-EE-FF.', 'error')
             return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name)
 
-        # If MAC address is still None (was not provided in form), generate a random one
         if mac_address is None:
             def generate_random_mac():
                 return ':'.join(['{:02x}'.format(random.randint(0x00, 0xFF)) for _ in range(6)]).upper()
             
             mac_address = generate_random_mac()
-            # Ensure generated MAC is unique
             while Device.query.filter_by(mac_address=mac_address).first():
                 mac_address = generate_random_mac()
 
-
-        # Check if MAC address already exists in the database
         if mac_address and Device.query.filter_by(mac_address=mac_address).first():
             flash('A device with this MAC address is already registered.', 'error')
             return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name)
         
-        # Determine if it's whitelisted or watchlisted based on form submission
-        is_whitelisted = 'is_whitelisted' in request.form
-        is_watchlist = 'is_watchlist' in request.form
-
-        # Ensure a device is either whitelisted OR watchlisted, not both
-        if is_whitelisted and is_watchlist:
-            flash('A device cannot be both whitelisted and watchlisted. Please choose one.', 'error')
-            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name)
-        
-        # If neither is selected, default to not whitelisted and not watchlisted
-        # For now, it will just be a registered device with no specific list status
-        pass # Keep them as False
-
+        # Automatically whitelist and do not watchlist new registrations
         new_device = Device(user_name=user_name, device_name=device_name, 
-                            mac_address=mac_address, is_whitelisted=is_whitelisted,
-                            is_watchlist=is_watchlist)
+                            mac_address=mac_address, is_whitelisted=True, # Automatically whitelist
+                            is_watchlist=False) # Do not add to watchlist on registration
         db.session.add(new_device)
         db.session.commit()
 
-        flash('Device registered successfully!', 'success')
+        flash('Device registered successfully and added to Network Devices!', 'success')
         return redirect(url_for('device_list_page'))
     
     return render_template('register.html', mac_address_prefill=mac_address_prefill)
