@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Navbar</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Bell Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -14,7 +13,7 @@
             --white-background: #FFFFFF;
             --navbar-bg: #343A40; 
             --dark-text: #212529;
-            --warning-red: #EA4335; /* For alert count */
+            --warning-red: #EA4335;
         }
 
         body { margin: 0; font-family: 'Inter', sans-serif; } 
@@ -45,41 +44,41 @@
             transition: background-color 0.3s ease, color 0.3s ease; 
             display: flex; 
             align-items: center;
-            gap: 5px; /* Space between icon and text */
+            gap: 5px; 
         }
-        /* Removed specific padding-right for alerts-link as badge is now on the icon */
-        /* nav ul li a.alerts-link {
-            padding-right: 30px; 
+        nav ul li a.alerts-link {
             position: relative; 
-        } */
-
+        }
         nav ul li a:hover { 
             background-color: var(--primary-blue); 
             color: var(--white-background); 
             text-decoration: none; 
         }
-        /* --- Alert Badge Style (Over Bell Icon) --- */
         .alert-badge {
             position: absolute;
-            top: 2px; /* Adjusted to sit higher, over the bell */
-            right: 0px; /* Adjusted to sit over the bell icon's right edge */
+            top: -10px;
+            right: -6px;
             background-color: var(--warning-red);
             color: white;
-            border-radius: 4px; /* Still square */
-            padding: 0px 4px; /* Reduced padding for a tighter fit on the icon */
-            font-size: 0.6em; /* Small font size for the number */
+            border-radius: 50%;
+            border: 2px solid var(--navbar-bg);
+            width: 16px;
+            height: 16px;
+            font-size: 0.6em;
             font-weight: 700;
-            min-width: 14px; /* Adjusted min-width */
-            min-height: 14px; /* Adjusted min-height */
             display: flex; 
             justify-content: center; 
             align-items: center; 
             line-height: 1; 
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
-            z-index: 10; 
-            transform: translate(50%, -50%); /* Shift by 50% of its own width/height to center on top-right of parent */
+            z-index: 10;
         }
-        /* --- END Alert Badge Style --- */
+        .bell-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
     </style>
 </head>
 <body>
@@ -92,10 +91,13 @@
                 <li><a href="{{ url_for('network_scan_page') }}">Network Scan</a></li>
                 <li>
                     <a href="{{ url_for('alerts_page') }}" class="alerts-link"> 
-                        <i class="fas fa-bell"></i> Alerts 
-                        {% if unread_alerts_count > 0 %}
-                            <span class="alert-badge">{{ unread_alerts_count }}</span>
-                        {% endif %}
+                        <span class="bell-wrapper">
+                            <i class="fas fa-bell"></i>
+                            {% if unread_alerts_count > 0 %}
+                                <span class="alert-badge">{{ unread_alerts_count }}</span>
+                            {% endif %}
+                        </span>
+                        Alerts
                     </a>
                 </li>
                 <li><a href="{{ url_for('logout') }}">Logout ({{ current_user.username }})</a></li>
