@@ -77,25 +77,14 @@
             font-weight: 600;
             color: #333;
         }
-        input[type="text"], input[type="checkbox"] {
-            margin-bottom: 20px;
-        }
         input[type="text"] {
             width: calc(100% - 20px); /* Adjust for padding */
             padding: 10px;
+            margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
             box-sizing: border-box; /* Include padding in width */
-        }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 10px;
-            width: auto; /* Override full width for checkboxes */
         }
         button[type="submit"] {
             background-color: #007bff; /* Blue submit button */
@@ -174,23 +163,13 @@
 
             <label for="mac_address">MAC Address (Optional, e.g., AA:BB:CC:DD:EE:FF):</label><br>
             <input type="text" id="mac_address" name="mac_address" value="{{ mac_address_prefill or '' }}" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})?$"><br><br>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="is_whitelisted" name="is_whitelisted" value="true">
-                <label for="is_whitelisted">Whitelist this device</label>
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="is_watchlist" name="is_watchlist" value="true">
-                <label for="is_watchlist">Add to Watchlist</label>
-            </div>
             
             <button type="submit">Register Device</button>
         </form>
     </div>
 
     <footer>
-        <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
+        <p>&copy; 2025 Device Manager. All rights reserved.</p>
     </footer>
 </body>
 </html>

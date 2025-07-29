@@ -1,4 +1,4 @@
-import os # This line ensures the 'os' module is available
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import re # Import regular expression module for MAC validation
@@ -80,20 +80,18 @@ def device_list_page():
     """Renders the device list page, showing whitelisted and watchlisted devices."""
     whitelisted_devices = Device.query.filter_by(is_whitelisted=True).all()
     watchlist_devices = Device.query.filter_by(is_watchlist=True).all()
-    
     return render_template('device_list.html', 
                            whitelisted_devices=whitelisted_devices,
                            watchlist_devices=watchlist_devices)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """Handles device registration, including pre-filling MAC address from scan."""
-    mac_address_prefill = request.args.get('mac') # Get MAC from URL parameter if present (changed from 'mac_address' to 'mac' for consistency with new register button)
+    """Handles device registration, automatically whitelisting new devices."""
+    mac_address_prefill = request.args.get('mac') 
     
     if request.method == 'POST':
         user_name = request.form['user_name']
         device_name = request.form['device_name']
-        # MAC address input is now optional; generate if not provided
         mac_address = request.form['mac_address'].strip().upper() if request.form['mac_address'] else None
         
         if mac_address and not is_valid_mac(mac_address):
