@@ -14,7 +14,7 @@
         }
         .container { 
             padding: 40px 20px; 
-            max-width: 700px; /* Adjusted max-width for forms */
+            max-width: 700px; 
             margin: 40px auto; 
             background-color: #ffffff; 
             border-radius: 12px; 
@@ -63,7 +63,7 @@
             text-decoration: none; 
         }
         form {
-            text-align: left; /* Align form elements to the left */
+            text-align: left; 
             padding: 20px;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
@@ -77,14 +77,14 @@
             font-weight: 600;
             color: #333;
         }
-        input[type="text"] {
-            width: calc(100% - 20px); /* Adjust for padding */
+        input[type="text"], select { /* Added select for device type dropdown */
+            width: calc(100% - 20px); 
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
-            box-sizing: border-box; /* Include padding in width */
+            box-sizing: border-box; 
         }
         .checkbox-group {
             display: flex;
@@ -93,10 +93,10 @@
         }
         .checkbox-group input[type="checkbox"] {
             margin-right: 10px;
-            width: auto; /* Override full width for checkboxes */
+            width: auto; 
         }
         button[type="submit"] {
-            background-color: #28a745; /* Green submit button */
+            background-color: #28a745; 
             color: white;
             padding: 12px 25px;
             border: none;
@@ -157,7 +157,7 @@
             h1 { font-size: 2em; }
             .container { margin: 20px auto; padding: 20px; }
             form { padding: 15px; }
-            input[type="text"] { width: calc(100% - 10px); }
+            input[type="text"], select { width: calc(100% - 10px); }
         }
     </style>
 </head>
@@ -185,6 +185,19 @@
 
             <label for="device_name">Device Name:</label><br>
             <input type="text" id="device_name" name="device_name" value="{{ device.device_name }}" required><br><br>
+
+            <label for="device_type">Device Type:</label><br>
+            <select id="device_type" name="device_type">
+                <option value="">Select Type (Optional)</option>
+                <option value="Laptop" {% if device.device_type == 'Laptop' %}selected{% endif %}>Laptop</option>
+                <option value="Smartphone" {% if device.device_type == 'Smartphone' %}selected{% endif %}>Smartphone</option>
+                <option value="Smart TV" {% if device.device_type == 'Smart TV' %}selected{% endif %}>Smart TV</option>
+                <option value="Smart Hub" {% if device.device_type == 'Smart Hub' %}selected{% endif %}>Smart Hub</option>
+                <option value="Router" {% if device.device_type == 'Router' %}selected{% endif %}>Router</option>
+                <option value="Printer" {% if device.device_type == 'Printer' %}selected{% endif %}>Printer</option>
+                <option value="Camera" {% if device.device_type == 'Camera' %}selected{% endif %}>Camera</option>
+                <option value="Other" {% if device.device_type == 'Other' %}selected{% endif %}>Other</option>
+            </select><br><br>
             
             {# MAC Address is not directly editable via this form, it's fixed on creation #}
             <label>MAC Address:</label><br>
@@ -212,11 +225,11 @@
                 </button>
             </form>
         </div>
-        <a href="{{ url_for('device_list_page') }}" class="back-link">Back to Device List</a> {# Updated link #}
+        <a href="{{ url_for('device_list_page') }}" class="back-link">Back to Device List</a> 
     </div>
 
     <footer>
-        <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
+        <p>&copy; 2025 Device Manager. All rights reserved.</p>
     </footer>
 </body>
 </html>

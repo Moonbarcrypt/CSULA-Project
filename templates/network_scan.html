@@ -107,28 +107,29 @@
         tr:hover {
             background-color: #f5f5f5;
         }
-        .status-known {
-            color: #28a745; /* Green */
-            font-weight: 600;
+        /* --- Button Spacing Fixes --- */
+        .action-cell {
+            white-space: nowrap; /* Prevent text wrapping in cell */
+            min-width: 120px; /* Ensure minimum width for the action column */
         }
-        .status-unknown {
-            color: #dc3545; /* Red */
-            font-weight: 600;
-        }
-        .register-button {
+        .register-button, .edit-button { /* Combined styles for both buttons */
             background-color: #28a745; /* Green */
             color: white;
-            padding: 8px 15px;
+            padding: 8px 12px; /* Adjusted padding for better fit */
             border: none;
             border-radius: 6px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 0.9em;
+            font-size: 0.85em; /* Slightly smaller font for compactness */
             transition: background-color 0.3s ease;
+            display: inline-block; /* Allow side-by-side if needed, but flex below handles it */
+            margin: 2px; /* Small margin around buttons */
         }
-        .register-button:hover {
+        .register-button:hover, .edit-button:hover {
             background-color: #218838;
         }
+        /* --- END Button Spacing Fixes --- */
+
         .alert {
             padding: 15px;
             margin-top: 20px;
@@ -185,13 +186,18 @@
             border-top: 1px solid #ccc;
         }
 
+        /* Status colors for scan results */
+        .scan-status-known { color: #28a745; font-weight: 600; } /* Green */
+        .scan-status-unknown { color: #dc3545; font-weight: 600; } /* Red */
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             h1 { font-size: 2.2em; }
             .container { margin: 20px auto; padding: 20px; }
-            th, td { padding: 10px; font-size: 0.85em; }
+            th, td { padding: 8px; font-size: 0.75em; } /* Further reduce padding/font on small screens */
             .scan-button { padding: 10px 20px; font-size: 1em; }
-            .register-button { padding: 6px 10px; font-size: 0.8em; }
+            .register-button, .edit-button { padding: 6px 8px; font-size: 0.7em; } /* Adjust button size */
+            .action-cell { min-width: 90px; } /* Adjust min-width for action column */
         }
     </style>
 </head>
@@ -218,16 +224,18 @@
             <h2>Scan Results</h2>
             {% if potential_intrusion_alert %}
                 <div class="alert alert-error">
-                    <strong>Potential Intrusion Alert!</strong> Unknown devices detected on your network.
+                    <strong>Potential Intrusion Alert!</strong> New devices detected on your network.
                 </div>
             {% endif %}
             <table>
                 <thead>
                     <tr>
                         <th>Device Name</th>
+                        <th>Device Type</th> 
                         <th>IP Address</th>
                         <th>MAC Address</th>
                         <th>Status</th>
+                        <th>Last Seen</th> 
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -236,23 +244,25 @@
                     <tr>
                         <td>
                             {% if device.status == 'Unknown' %}
-                                <span class="status-unknown">{{ device.device_name }}</span> {# Displays "Unknown Device" #}
+                                <span class="scan-status-unknown">{{ device.device_name }}</span> 
                             {% else %}
                                 {{ device.device_name }}
                             {% endif %}
                         </td>
+                        <td>{{ device.device_type if device.device_type else 'N/A' }}</td> 
                         <td>{{ device.ip }}</td>
                         <td>{{ device.mac }}</td>
                         <td>
-                            <span class="status-{{ device.status | lower }}">
+                            <span class="scan-status-{{ device.status | lower }}">
                                 {{ device.status }}
                             </span>
                         </td>
-                        <td>
+                        <td>{{ device.last_seen }}</td> 
+                        <td class="action-cell"> {# Added class for styling #}
                             {% if device.status == 'Unknown' %}
-                                <a href="{{ url_for('register', mac=device.mac) }}" class="register-button">Register Device</a> {# Changed mac_address to mac #}
+                                <a href="{{ url_for('register', mac=device.mac) }}" class="register-button">Register Device</a> 
                             {% else %}
-                                <a href="{{ url_for('edit_device', device_id=device.device_id) }}" class="register-button">Edit Details</a>
+                                <a href="{{ url_for('edit_device', device_id=device.device_id) }}" class="edit-button">Edit Details</a> {# Renamed class for clarity #}
                             {% endif %}
                         </td>
                     </tr>
@@ -265,7 +275,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 IoT Device Manager. All rights reserved.</p>
+        <p>&copy; 2025 Device Manager. All rights reserved.</p>
     </footer>
 </body>
 </html>

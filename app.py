@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 import re # Import regular expression module for MAC validation
 import random # For generating random MACs if not provided
+from datetime import datetime # Import datetime for timestamps
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -23,12 +24,11 @@ class Device(db.Model):
     mac_address = db.Column(db.String(17), unique=True, nullable=True) # MAC address can be null for non-network devices
     is_whitelisted = db.Column(db.Boolean, default=False)
     is_watchlist = db.Column(db.Boolean, default=False)
-    # You can add other fields here if your database schema includes them
-    # e.g., ip_address = db.Column(db.String(15))
-    #        status = db.Column(db.String(20))
-    #        device_type = db.Column(db.String(50))
-    #        location = db.Column(db.String(100))
-    #        notes = db.Column(db.Text)
+    
+    # New fields for Device Type, Last Seen, and Status
+    device_type = db.Column(db.String(50), nullable=True) # e.g., "Laptop", "Phone", "Smart TV"
+    last_seen = db.Column(db.DateTime, nullable=True) # Timestamp of last detection
+    status = db.Column(db.String(20), default='Offline') # e.g., "Online", "Offline", "Unknown"
 
     def __repr__(self):
         return f'<Device {self.device_name} ({self.mac_address})>'
@@ -44,12 +44,18 @@ def is_valid_mac(mac):
 def create_dummy_data():
     if Device.query.count() == 0: # Only add if database is empty
         print("Adding dummy data...")
+        current_time = datetime.now()
         dummy_devices = [
-            Device(user_name='John Doe', device_name='Johns Laptop', mac_address='00:1A:2B:3C:4D:5E', is_whitelisted=True, is_watchlist=False),
-            Device(user_name='Jane Smith', device_name='Smart TV', mac_address='00:1A:2B:3C:4D:60', is_whitelisted=True, is_watchlist=False),
-            Device(user_name='Guest', device_name='Guest Phone', mac_address='00:1A:2B:3C:4D:62', is_whitelisted=False, is_watchlist=True),
-            Device(user_name='Home Automation', device_name='Smart Hub', mac_address='00:1A:2B:3C:4D:64', is_whitelisted=True, is_watchlist=False),
-            Device(user_name='Unknown User', device_name='Suspicious Device', mac_address='00:1A:2B:3C:4D:66', is_whitelisted=False, is_watchlist=True)
+            Device(user_name='John Doe', device_name='Johns Laptop', mac_address='00:1A:2B:3C:4D:5E', 
+                   is_whitelisted=True, is_watchlist=False, device_type='Laptop', last_seen=current_time, status='Online'),
+            Device(user_name='Jane Smith', device_name='Smart TV', mac_address='00:1A:2B:3C:4D:60', 
+                   is_whitelisted=True, is_watchlist=False, device_type='Smart TV', last_seen=current_time, status='Online'),
+            Device(user_name='Guest', device_name='Guest Phone', mac_address='00:1A:2B:3C:4D:62', 
+                   is_whitelisted=False, is_watchlist=True, device_type='Smartphone', last_seen=current_time, status='Online'),
+            Device(user_name='Home Automation', device_name='Smart Hub', mac_address='00:1A:2B:3C:4D:64', 
+                   is_whitelisted=True, is_watchlist=False, device_type='Smart Hub', last_seen=current_time, status='Online'),
+            Device(user_name='Unknown User', device_name='Suspicious Device', mac_address='00:1A:2B:3C:4D:66', 
+                   is_whitelisted=False, is_watchlist=True, device_type='Unknown', last_seen=current_time, status='Online')
         ]
         db.session.add_all(dummy_devices)
         db.session.commit()
@@ -80,6 +86,7 @@ def device_list_page():
     """Renders the device list page, showing whitelisted and watchlisted devices."""
     whitelisted_devices = Device.query.filter_by(is_whitelisted=True).all()
     watchlist_devices = Device.query.filter_by(is_watchlist=True).all()
+    
     return render_template('device_list.html', 
                            whitelisted_devices=whitelisted_devices,
                            watchlist_devices=watchlist_devices)
@@ -93,10 +100,11 @@ def register():
         user_name = request.form['user_name']
         device_name = request.form['device_name']
         mac_address = request.form['mac_address'].strip().upper() if request.form['mac_address'] else None
+        device_type = request.form['device_type'] # Get device type from form
         
         if mac_address and not is_valid_mac(mac_address):
             flash('Invalid MAC address format. Please use AA:BB:CC:DD:EE:FF or AA-BB-CC-DD-EE-FF.', 'error')
-            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name)
+            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type)
 
         if mac_address is None:
             def generate_random_mac():
@@ -108,12 +116,13 @@ def register():
 
         if mac_address and Device.query.filter_by(mac_address=mac_address).first():
             flash('A device with this MAC address is already registered.', 'error')
-            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name)
+            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type)
         
         # Automatically whitelist and do not watchlist new registrations
         new_device = Device(user_name=user_name, device_name=device_name, 
-                            mac_address=mac_address, is_whitelisted=True, # Automatically whitelist
-                            is_watchlist=False) # Do not add to watchlist on registration
+                            mac_address=mac_address, is_whitelisted=True, 
+                            is_watchlist=False, device_type=device_type,
+                            last_seen=datetime.now(), status='Online') # Set initial status and last_seen
         db.session.add(new_device)
         db.session.commit()
 
@@ -129,6 +138,7 @@ def edit_device(device_id):
     if request.method == 'POST':
         device.user_name = request.form['user_name']
         device.device_name = request.form['device_name']
+        device.device_type = request.form['device_type'] # Update device type
         # MAC address is not editable via this form as per the template
         # is_whitelisted and is_watchlist can be updated from the form
         device.is_whitelisted = 'is_whitelisted' in request.form
@@ -182,24 +192,31 @@ def network_scan_page():
     """
     Handles network scanning and displays results.
     Results are stored in the session for persistence.
+    Updates status and last_seen for known devices.
     """
-    # Retrieve previous scan results and alert status from session
     scan_results = session.get('scan_results', []) 
     potential_intrusion_alert = session.get('potential_intrusion_alert', False)
     
     if request.method == 'POST':
         # Simulate network scan results
-        # In a real application, you would integrate with a network scanning tool (e.g., scapy, nmap)
-        # For demonstration purposes, we use some dummy data.
+        # These MACs should ideally overlap with some dummy data MACs
+        # and include some new/unknown ones.
         dummy_scan_data = [
-            {'mac': '00:1A:2B:3C:4D:5E', 'ip': '192.168.1.101'}, # Example known device (whitelisted in dummy data)
-            {'mac': '00:1A:2B:3C:4D:5F', 'ip': '192.168.1.102'}, # Example unknown device
-            {'mac': '00:1A:2B:3C:4D:60', 'ip': '192.168.1.103'}, # Example known device (whitelisted in dummy data)
-            {'mac': '00:1A:2B:3C:4D:61', 'ip': '192.168.1.104'}, # Example unknown device
-            {'mac': '00:1A:2B:3C:4D:62', 'ip': '192.168.1.105'}  # Example known device (watchlisted in dummy data)
+            {'mac': '00:1A:2B:3C:4D:5E', 'ip': '192.168.1.101'}, # John's Laptop (Known)
+            {'mac': '00:1A:2B:3C:4D:5F', 'ip': '192.168.1.102'}, # Unknown
+            {'mac': '00:1A:2B:3C:4D:60', 'ip': '192.168.1.103'}, # Smart TV (Known)
+            {'mac': '00:1A:2B:3C:4D:61', 'ip': '192.168.1.104'}, # Unknown
+            {'mac': '00:1A:2B:3C:4D:64', 'ip': '192.168.1.105'}, # Smart Hub (Known)
+            {'mac': 'AA:BB:CC:DD:EE:FF', 'ip': '192.168.1.106'}  # Another Unknown
         ]
 
-        # Clear previous results and reset alert status before a new scan
+        # Reset all existing devices to 'Offline' before processing current scan
+        # This ensures devices not in the current scan are marked offline
+        all_registered_devices = Device.query.all()
+        for device in all_registered_devices:
+            device.status = 'Offline'
+        db.session.commit() # Commit this bulk update
+
         scan_results = []
         potential_intrusion_alert = False
 
@@ -207,17 +224,22 @@ def network_scan_page():
             mac = item['mac']
             ip = item['ip']
             
-            # Check if device is already in our database by MAC address
             existing_device = Device.query.filter_by(mac_address=mac).first()
             
             if existing_device:
-                # Device is known, add its name and ID
+                # Device is known: update its status to Online and last_seen timestamp
+                existing_device.status = 'Online'
+                existing_device.last_seen = datetime.now()
+                db.session.add(existing_device) # Add to session for commit
+                
                 scan_results.append({
                     'mac': mac,
                     'ip': ip,
                     'status': 'Known',
                     'device_name': existing_device.device_name,
-                    'device_id': existing_device.id
+                    'device_id': existing_device.id,
+                    'device_type': existing_device.device_type, # Pass device type
+                    'last_seen': existing_device.last_seen.strftime('%Y-%m-%d %H:%M:%S') # Format for display
                 })
             else:
                 # Device is unknown/new
@@ -225,22 +247,23 @@ def network_scan_page():
                     'mac': mac,
                     'ip': ip,
                     'status': 'Unknown',
-                    'device_name': 'Unknown Device', # Display this user-friendly name
-                    'device_id': None # No ID as it's not in DB yet
+                    'device_name': 'New Device', # Display this user-friendly name
+                    'device_id': None, 
+                    'device_type': 'Unknown', # Default type for unknown
+                    'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S') # Last seen now
                 })
-                potential_intrusion_alert = True # Set alert if any unknown device is found
+                potential_intrusion_alert = True 
+        
+        db.session.commit() # Commit all updates (status and last_seen for known devices)
 
-        # Store the new scan results and alert status in the session
         session['scan_results'] = scan_results 
         session['potential_intrusion_alert'] = potential_intrusion_alert 
 
-        # Flash message for intrusion alert or scan completion
         if potential_intrusion_alert:
-            flash('Potential Intrusion Alert! Unknown devices detected on your network.', 'error')
+            flash('Potential Intrusion Alert! New devices detected on your network.', 'error')
         else:
-            flash('Network scan completed. No unknown devices found.', 'success')
+            flash('Network scan completed. No new devices found.', 'success')
 
-        # Redirect to the GET request of the same page to prevent form resubmission on refresh
         return redirect(url_for('network_scan_page'))
     
     # On GET request, render the template with results retrieved from session

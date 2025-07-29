@@ -14,7 +14,7 @@
         }
         .container { 
             padding: 40px 20px; 
-            max-width: 700px; /* Adjusted max-width for forms */
+            max-width: 700px; 
             margin: 40px auto; 
             background-color: #ffffff; 
             border-radius: 12px; 
@@ -63,7 +63,7 @@
             text-decoration: none; 
         }
         form {
-            text-align: left; /* Align form elements to the left */
+            text-align: left; 
             padding: 20px;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
@@ -77,17 +77,17 @@
             font-weight: 600;
             color: #333;
         }
-        input[type="text"] {
-            width: calc(100% - 20px); /* Adjust for padding */
+        input[type="text"], select { /* Added select for device type dropdown */
+            width: calc(100% - 20px); 
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
-            box-sizing: border-box; /* Include padding in width */
+            box-sizing: border-box; 
         }
         button[type="submit"] {
-            background-color: #007bff; /* Blue submit button */
+            background-color: #007bff; 
             color: white;
             padding: 12px 25px;
             border: none;
@@ -136,7 +136,7 @@
             h1 { font-size: 2em; }
             .container { margin: 20px auto; padding: 20px; }
             form { padding: 15px; }
-            input[type="text"] { width: calc(100% - 10px); }
+            input[type="text"], select { width: calc(100% - 10px); }
         }
     </style>
 </head>
@@ -160,6 +160,19 @@
 
             <label for="device_name">Device Name:</label><br>
             <input type="text" id="device_name" name="device_name" value="{{ device_name if device_name else '' }}" required><br><br>
+
+            <label for="device_type">Device Type:</label><br>
+            <select id="device_type" name="device_type">
+                <option value="">Select Type (Optional)</option>
+                <option value="Laptop" {% if device_type == 'Laptop' %}selected{% endif %}>Laptop</option>
+                <option value="Smartphone" {% if device_type == 'Smartphone' %}selected{% endif %}>Smartphone</option>
+                <option value="Smart TV" {% if device_type == 'Smart TV' %}selected{% endif %}>Smart TV</option>
+                <option value="Smart Hub" {% if device_type == 'Smart Hub' %}selected{% endif %}>Smart Hub</option>
+                <option value="Router" {% if device_type == 'Router' %}selected{% endif %}>Router</option>
+                <option value="Printer" {% if device_type == 'Printer' %}selected{% endif %}>Printer</option>
+                <option value="Camera" {% if device_type == 'Camera' %}selected{% endif %}>Camera</option>
+                <option value="Other" {% if device_type == 'Other' %}selected{% endif %}>Other</option>
+            </select><br><br>
 
             <label for="mac_address">MAC Address (Optional, e.g., AA:BB:CC:DD:EE:FF):</label><br>
             <input type="text" id="mac_address" name="mac_address" value="{{ mac_address_prefill or '' }}" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})?$"><br><br>
