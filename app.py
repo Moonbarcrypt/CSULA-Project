@@ -142,10 +142,8 @@ def login():
     return render_template('login.html')
 
 @app.route('/register_user', methods=['GET', 'POST'])
+@login_required
 def register_user():
-    if current_user.is_authenticated:
-        return redirect(url_for('device_list_page')) 
-    
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']

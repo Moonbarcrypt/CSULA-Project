@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register Account</title>
+    <title>Register Device</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-blue: #4285F4; 
             --darker-blue: #3367D6; 
+            --secondary-green: #34A853; 
+            --warning-red: #EA4335; 
             --light-background: #F8F9FA; 
             --white-background: #FFFFFF;
             --dark-text: #212529; 
@@ -34,7 +36,7 @@
         }
         .container { 
             padding: 40px 20px; 
-            max-width: 500px; 
+            max-width: 700px; 
             margin: 40px auto; 
             background-color: var(--white-background); 
             border-radius: 12px; 
@@ -55,6 +57,35 @@
             margin-bottom: 25px;
             font-weight: 400;
         }
+        nav { 
+            background-color: var(--navbar-bg); 
+            padding: 1em 0; 
+            margin-bottom: 0; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        nav ul { 
+            list-style-type: none; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+        }
+        nav ul li { 
+            margin: 0 15px; 
+        }
+        nav ul li a { 
+            color: var(--white-background); 
+            text-decoration: none; 
+            font-weight: 500; 
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease; 
+        }
+        nav ul li a:hover { 
+            background-color: var(--primary-blue); 
+            color: var(--white-background); 
+            text-decoration: none; 
+        }
         form {
             text-align: left; 
             padding: 20px;
@@ -70,7 +101,7 @@
             font-weight: 600;
             color: var(--dark-text);
         }
-        input[type="text"], input[type="password"] { 
+        input[type="text"], select { 
             width: calc(100% - 20px); 
             padding: 10px;
             margin-bottom: 20px;
@@ -81,6 +112,10 @@
             color: var(--dark-text);
             background-color: var(--white-background);
             font-weight: 400;
+        }
+        input[type="text"][readonly] {
+            background-color: var(--light-background);
+            cursor: not-allowed;
         }
         button[type="submit"] {
             background-color: var(--primary-blue); 
@@ -117,23 +152,15 @@
             color: var(--error-text); 
             border: 1px solid #f5c6cb; 
         }
-        .flash-message.info { 
-            background-color: var(--info-bg); 
-            color: var(--info-text); 
-            border: 1px solid #bee5eb; 
-        }
-        .link-text {
+        .back-link {
+            display: block;
             margin-top: 20px;
-            font-size: 0.95em;
-            color: var(--medium-text);
-        }
-        .link-text a {
-            color: var(--primary-blue);
+            color: var(--primary-blue); 
             text-decoration: none;
             font-weight: 600;
             transition: color 0.2s ease;
         }
-        .link-text a:hover {
+        .back-link:hover {
             color: var(--darker-blue);
             text-decoration: underline;
         }
@@ -150,18 +177,20 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            h1 { font-size: 2.2em; }
+            h1 { font-size: 2em; }
             .container { margin: 20px auto; padding: 20px; }
             form { padding: 15px; }
-            input[type="text"], input[type="password"] { width: calc(100% - 10px); }
+            input[type="text"], select { width: calc(100% - 10px); }
             button[type="submit"] { padding: 10px 20px; font-size: 1em; }
         }
     </style>
 </head>
 <body>
+    {% include 'base_navbar.html' %}
+
     <div class="container">
-        <h1>Register Account</h1>
-        <p>Create a new account to manage your devices.</p>
+        <h1>Register New Device</h1>
+        <p>Fill out the form below to register a new device on your network.</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -171,17 +200,35 @@
             {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('register_user') }}" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="{{ username if username else '' }}" required><br><br>
+        <form action="{{ url_for('register') }}" method="post">
+            <label for="user_name">User Name:</label>
+            <input type="text" id="user_name" name="user_name" required>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            
-            <button type="submit">Register</button>
+            <label for="device_name">Device Name:</label>
+            <input type="text" id="device_name" name="device_name" required>
+
+            <label for="device_type">Device Type:</label>
+            <select id="device_type" name="device_type" required>
+                <option value="">Select Device Type</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Smart TV">Smart TV</option>
+                <option value="Smart Hub">Smart Hub</option>
+                <option value="Mobile Phone">Mobile Phone</option>
+                <option value="Tablet">Tablet</option>
+                <option value="Desktop">Desktop</option>
+                <option value="Printer">Printer</option>
+                <option value="Camera">Camera</option>
+                <option value="Gaming Console">Gaming Console</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="mac_address">MAC Address:</label>
+            <input type="text" id="mac_address" name="mac_address" value="{{ mac_address if mac_address else '' }}" {% if mac_address %}readonly{% endif %} required>
+
+            <button type="submit">Register Device</button>
         </form>
 
-        <p class="link-text">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        <a href="{{ url_for('index') }}" class="back-link">Back to Home</a>
     </div>
 
     <footer>
