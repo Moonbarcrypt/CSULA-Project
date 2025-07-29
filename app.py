@@ -395,3 +395,4 @@ def inject_unread_alerts_count():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
