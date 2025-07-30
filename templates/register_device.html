@@ -1,187 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register Device</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register New Device</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-blue: #4285F4; 
-            --darker-blue: #3367D6; 
-            --secondary-green: #34A853; 
-            --warning-red: #EA4335; 
-            --light-background: #F8F9FA; 
-            --white-background: #FFFFFF;
-            --dark-text: #212529; 
-            --medium-text: #6C757D; 
-            --navbar-bg: #343A40; 
-            --border-light: #E9ECEF;
-            --success-bg: #D4EDDA;
-            --success-text: #155724;
-            --error-bg: #F8D7DA;
-            --error-text: #721C24;
-            --info-bg: #D1ECF1;
-            --info-text: #0C5460;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
         }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            background-color: var(--light-background); 
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh; 
-            color: var(--dark-text);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        .container {
+            max-width: 600px;
+            margin: 4rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-        .container { 
-            padding: 40px 20px; 
-            max-width: 700px; 
-            margin: 40px auto; 
-            background-color: var(--white-background); 
-            border-radius: 12px; 
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); 
-            text-align: center; 
-            flex-grow: 1; 
-        }
-        h1 { 
-            color: var(--dark-text); 
-            font-size: 2.8em; 
-            margin-bottom: 20px; 
-            font-weight: 700; 
-        }
-        p {
-            color: var(--medium-text);
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            font-weight: 400;
-        }
-        nav { 
-            background-color: var(--navbar-bg); 
-            padding: 1em 0; 
-            margin-bottom: 0; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        nav ul { 
-            list-style-type: none; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-        }
-        nav ul li { 
-            margin: 0 15px; 
-        }
-        nav ul li a { 
-            color: var(--white-background); 
-            text-decoration: none; 
-            font-weight: 500; 
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: background-color 0.3s ease, color 0.3s ease; 
-        }
-        nav ul li a:hover { 
-            background-color: var(--primary-blue); 
-            color: var(--white-background); 
-            text-decoration: none; 
-        }
-        form {
-            text-align: left; 
-            padding: 20px;
-            border: 1px solid var(--border-light);
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            background-color: var(--white-background); 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-top: 30px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
         }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark-text);
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-        input[type="text"], select { 
-            width: calc(100% - 20px); 
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-light);
-            border-radius: 5px;
-            font-size: 1em;
-            box-sizing: border-box; 
-            color: var(--dark-text);
-            background-color: var(--white-background);
-            font-weight: 400;
-        }
-        input[type="text"][readonly] {
-            background-color: var(--light-background);
-            cursor: not-allowed;
-        }
-        button[type="submit"] {
-            background-color: var(--primary-blue); 
-            color: var(--white-background);
-            padding: 12px 25px;
-            border: none;
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
         }
-        button[type="submit"]:hover {
-            background-color: var(--darker-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
         }
-        .flash-message { 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border-radius: 8px; 
-            font-weight: 600;
-            text-align: left;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        .btn-primary:active {
+            transform: translateY(0);
         }
-        .flash-message.success { 
-            background-color: var(--success-bg); 
-            color: var(--success-text); 
-            border: 1px solid #c3e6cb; 
+        .flash-message {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
         }
-        .flash-message.error { 
-            background-color: var(--error-bg); 
-            color: var(--error-text); 
-            border: 1px solid #f5c6cb; 
+        .flash-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
         }
-        .back-link {
-            display: block;
-            margin-top: 20px;
-            color: var(--primary-blue); 
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s ease;
+        .flash-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
         }
-        .back-link:hover {
-            color: var(--darker-blue);
-            text-decoration: underline;
-        }
-        footer {
-            margin-top: auto; 
-            padding: 20px;
-            text-align: center;
-            color: var(--medium-text);
-            font-size: 0.9em;
-            background-color: var(--white-background); 
-            border-top: 1px solid var(--border-light);
-            font-weight: 400;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            h1 { font-size: 2em; }
-            .container { margin: 20px auto; padding: 20px; }
-            form { padding: 15px; }
-            input[type="text"], select { width: calc(100% - 10px); }
-            button[type="submit"] { padding: 10px 20px; font-size: 1em; }
+        .flash-info {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            border: 1px solid #38bdf8;
         }
     </style>
 </head>
@@ -189,50 +75,54 @@
     {% include 'base_navbar.html' %}
 
     <div class="container">
-        <h1>Register New Device</h1>
-        <p>Fill out the form below to register a new device on your network.</p>
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Register New Device</h2>
 
+        {# Flash Messages Section #}
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
+                <div class="mb-6">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('register') }}" method="post">
-            <label for="user_name">User Name:</label>
-            <input type="text" id="user_name" name="user_name" required>
-
-            <label for="device_name">Device Name:</label>
-            <input type="text" id="device_name" name="device_name" required>
-
-            <label for="device_type">Device Type:</label>
-            <select id="device_type" name="device_type" required>
-                <option value="">Select Device Type</option>
-                <option value="Laptop">Laptop</option>
-                <option value="Smart TV">Smart TV</option>
-                <option value="Smart Hub">Smart Hub</option>
-                <option value="Mobile Phone">Mobile Phone</option>
-                <option value="Tablet">Tablet</option>
-                <option value="Desktop">Desktop</option>
-                <option value="Printer">Printer</option>
-                <option value="Camera">Camera</option>
-                <option value="Gaming Console">Gaming Console</option>
-                <option value="Other">Other</option>
-            </select>
-
-            <label for="mac_address">MAC Address:</label>
-            <input type="text" id="mac_address" name="mac_address" value="{{ mac_address if mac_address else '' }}" {% if mac_address %}readonly{% endif %} required>
-
-            <button type="submit">Register Device</button>
+        <form action="{{ url_for('register') }}" method="POST" class="space-y-6">
+            <div>
+                <label for="user_name" class="block text-sm font-medium text-gray-700 mb-1">User Name (e.g., John Doe)</label>
+                <input type="text" id="user_name" name="user_name" value="{{ user_name if user_name else '' }}" required
+                       class="form-input" placeholder="Enter user's name">
+            </div>
+            <div>
+                <label for="device_name" class="block text-sm font-medium text-gray-700 mb-1">Device Name (e.g., My Laptop)</label>
+                <input type="text" id="device_name" name="device_name" value="{{ device_name if device_name else '' }}" required
+                       class="form-input" placeholder="Enter device name">
+            </div>
+            <div>
+                <label for="mac_address" class="block text-sm font-medium text-gray-700 mb-1">MAC Address (Optional, e.g., AA:BB:CC:DD:EE:FF)</label>
+                <input type="text" id="mac_address" name="mac_address" value="{{ mac_address_prefill if mac_address_prefill else '' }}"
+                       class="form-input" placeholder="Leave blank to auto-generate">
+                <p class="mt-1 text-sm text-gray-500">If left blank, a random MAC address will be generated.</p>
+            </div>
+            <div>
+                <label for="device_type" class="block text-sm font-medium text-gray-700 mb-1">Device Type</label>
+                <select id="device_type" name="device_type" required class="form-input">
+                    <option value="" disabled selected>Select a device type</option>
+                    <option value="Laptop" {% if device_type == 'Laptop' %}selected{% endif %}>Laptop</option>
+                    <option value="Smartphone" {% if device_type == 'Smartphone' %}selected{% endif %}>Smartphone</option>
+                    <option value="Smart TV" {% if device_type == 'Smart TV' %}selected{% endif %}>Smart TV</option>
+                    <option value="Smart Hub" {% if device_type == 'Smart Hub' %}selected{% endif %}>Smart Hub</option>
+                    <option value="IoT Sensor" {% if device_type == 'IoT Sensor' %}selected{% endif %}>IoT Sensor</option>
+                    <option value="Gaming Console" {% if device_type == 'Gaming Console' %}selected{% endif %}>Gaming Console</option>
+                    <option value="Other" {% if device_type == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-primary w-full">Register Device</button>
         </form>
-
-        <a href="{{ url_for('index') }}" class="back-link">Back to Home</a>
     </div>
-
-    <footer>
-        <p>&copy; 2025 Device Manager. All rights reserved.</p>
-    </footer>
 </body>
 </html>

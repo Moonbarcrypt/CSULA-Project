@@ -142,8 +142,10 @@ def login():
     return render_template('login.html')
 
 @app.route('/register_user', methods=['GET', 'POST'])
-@login_required
 def register_user():
+    if current_user.is_authenticated:
+        return redirect(url_for('device_list_page')) 
+    
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -178,7 +180,7 @@ def device_list_page():
                            whitelisted_devices=whitelisted_devices,
                            watchlist_devices=watchlist_devices)
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST']) # This route name remains 'register'
 @login_required 
 def register():
     """Handles device registration, automatically whitelisting new devices for the current user."""
@@ -195,7 +197,7 @@ def register():
         
         if mac_address and not is_valid_mac(mac_address):
             flash('Invalid MAC address format. Please use AA:BB:CC:DD:EE:FF or AA-BB-CC-DD-EE-FF.', 'error')
-            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type)
+            return render_template('register_device.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type) # Changed to register_device.html
 
         if mac_address is None:
             def generate_random_mac():
@@ -207,7 +209,7 @@ def register():
 
         if Device.query.filter_by(user_id=current_user.id, mac_address=mac_address).first():
             flash('A device with this MAC address is already registered by you.', 'error')
-            return render_template('register.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type)
+            return render_template('register_device.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type) # Changed to register_device.html
         
         new_device = Device(user_id=current_user.id, user_name=user_name, device_name=device_name, 
                             mac_address=mac_address, is_whitelisted=True, 
@@ -219,7 +221,7 @@ def register():
         flash('Device registered successfully and added to Network Devices!', 'success')
         return redirect(url_for('device_list_page'))
     
-    return render_template('register.html', mac_address_prefill=mac_address_prefill)
+    return render_template('register_device.html', mac_address_prefill=mac_address_prefill) # Changed to register_device.html
 
 @app.route('/edit_device/<int:device_id>', methods=['GET', 'POST'])
 @login_required 
@@ -340,9 +342,6 @@ def network_scan_page():
                 })
                 new_devices_found_in_scan = True 
 
-                # Create an alert only if this specific MAC address hasn't triggered an alert before for this user
-                # or if the previous alert for this MAC was marked as read.
-                # This prevents spamming alerts for the same unknown device on every scan.
                 existing_alert_for_mac = Alert.query.filter_by(user_id=current_user.id, message=f'New unknown device detected: {mac}', is_read=False).first()
                 if not existing_alert_for_mac:
                     new_alert = Alert(user_id=current_user.id, message=f'New unknown device detected: {mac}', timestamp=datetime.now(), is_read=False)
@@ -352,7 +351,6 @@ def network_scan_page():
 
         session['scan_results'] = scan_results 
         
-        # Flash message based on new_devices_found_in_scan
         if new_devices_found_in_scan:
             flash('Potential Intrusion Alert! New devices detected on your network.', 'error')
         else:
@@ -360,9 +358,6 @@ def network_scan_page():
 
         return redirect(url_for('network_scan_page'))
     
-    # On GET request, render the template with results retrieved from session
-    # We no longer use potential_intrusion_alert directly in the template,
-    # relying on flash messages and the 'Unknown' status in scan_results table.
     return render_template('network_scan.html', scan_results=scan_results)
 
 @app.route('/alerts')
@@ -372,25 +367,14 @@ def alerts_page():
     all_alerts = Alert.query.filter_by(user_id=current_user.id).order_by(Alert.timestamp.desc()).all()
     return render_template('alerts.html', alerts=all_alerts)
 
-@app.route('/mark_alert_read/<int:alert_id>', methods=['POST'])
-@login_required
-def mark_alert_read(alert_id):
-    """Marks a specific alert as read for the current user."""
-    alert = Alert.query.filter_by(id=alert_id, user_id=current_user.id).first_or_404()
-    alert.is_read = True
-    db.session.commit()
-    flash('Alert marked as read.', 'info')
-    return redirect(url_for('alerts_page'))
-
 @app.context_processor
 def inject_unread_alerts_count():
     """Injects the count of unread alerts into all templates."""
     if current_user.is_authenticated:
         unread_count = Alert.query.filter_by(user_id=current_user.id, is_read=False).count()
         return dict(unread_alerts_count=unread_count)
-    return dict(unread_alerts_count=0) # No unread alerts if not logged in
+    return dict(unread_alerts_count=0) 
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-    

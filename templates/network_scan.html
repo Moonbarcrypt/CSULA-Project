@@ -254,7 +254,6 @@
 
         {% if scan_results %}
             <h2>Scan Results</h2>
-            {# Removed the direct display of potential_intrusion_alert here. It's now handled by flash messages. #}
             <table>
                 <thead>
                     <tr>
@@ -288,7 +287,7 @@
                         <td>{{ device.last_seen }}</td> 
                         <td class="action-cell"> 
                             {% if device.status == 'Unknown' %}
-                                <a href="{{ url_for('register', mac=device.mac) }}" class="register-button">Register Device</a> 
+                                <a href="{{ url_for('register', mac=device.mac) }}" class="register-button">Register Device</a> {# This link is correct #}
                             {% else %}
                                 <a href="{{ url_for('edit_device', device_id=device.device_id) }}" class="edit-button">Edit Details</a> 
                             {% endif %}
