@@ -1,253 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Device Manager</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Feature Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Network Security Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-blue: #4285F4; /* Main accent blue */
-            --darker-blue: #3367D6; /* Darker blue for hover */
-            --secondary-green: #34A853; /* Secondary accent green */
-            --warning-red: #EA4335; /* Red for alerts/delete */
-            --light-background: #F8F9FA; /* Very light gray background */
-            --white-background: #FFFFFF; /* White for content cards */
-            --dark-text: #212529; /* Dark charcoal for headings */
-            --medium-text: #6C757D; /* Medium gray for paragraphs */
-            --navbar-bg: #343A40; /* Deep charcoal for navbar */
-            --border-light: #E9ECEF; /* Light gray for borders */
-            --success-bg: #D4EDDA;
-            --success-text: #155724;
-            --error-bg: #F8D7DA;
-            --error-text: #721C24;
-            --info-bg: #D1ECF1;
-            --info-text: #0C5460;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
         }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            background-color: var(--light-background); 
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh; 
-            color: var(--dark-text);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        .container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 2.5rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center; /* Center content within the container */
         }
-        .container { 
-            padding: 40px 20px; 
-            max-width: 900px; 
-            margin: 40px auto; 
-            background-color: var(--white-background); 
-            border-radius: 12px; 
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); 
-            text-align: center; 
-            flex-grow: 1; 
-        }
-        h1 { 
-            color: var(--dark-text); 
-            font-size: 3.2em; 
-            margin-bottom: 20px; 
-            font-weight: 700; 
-            display: flex; 
-            align-items: center;
-            justify-content: center;
-            gap: 15px; 
-        }
-        h1 .header-icon {
-            width: 80px; 
-            height: auto;
-            vertical-align: middle; 
-            margin-right: 10px; 
-        }
-        h2 {
-            color: var(--dark-text);
-            font-size: 1.8em;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        p {
-            color: var(--medium-text);
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            font-weight: 400;
-        }
-        nav { 
-            background-color: var(--navbar-bg); 
-            padding: 1em 0; 
-            margin-bottom: 0; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        nav ul { 
-            list-style-type: none; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-        }
-        nav ul li { 
-            margin: 0 15px; 
-        }
-        nav ul li a { 
-            color: var(--white-background); 
-            text-decoration: none; 
-            font-weight: 500; 
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: background-color 0.3s ease, color 0.3s ease; 
-        }
-        nav ul li a:hover { 
-            background-color: var(--primary-blue); 
-            color: var(--white-background); 
-            text-decoration: none; 
-        }
-        .security-focus {
-            background-color: var(--white-background); 
-            border: 1px solid var(--border-light); 
-            padding: 25px;
-            margin: 30px auto; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
-            color: var(--dark-text); 
-            max-width: 700px; 
-            text-align: center; 
-        }
-        .security-focus h2 {
-            color: var(--primary-blue); 
-            font-size: 1.8em;
-            margin-top: 0;
-            margin-bottom: 20px; 
-            font-weight: 600;
-            text-align: center; 
-        }
-        .security-features {
-            display: flex;
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 25px; 
-            margin-bottom: 20px;
-        }
-        .feature-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 180px; 
-            text-align: center;
-        }
-        .feature-item .feature-icon { 
-            font-size: 3.5em; 
-            color: var(--primary-blue); 
-            margin-bottom: 10px;
-            background-color: var(--light-background); 
-            border-radius: 50%;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-        }
-        .feature-item p {
-            font-size: 0.95em;
-            color: var(--medium-text); 
-            line-height: 1.4;
-            margin: 0; 
-            font-weight: 400;
-        }
-        .action-buttons {
-            margin-top: 40px;
-            display: flex;
-            justify-content: center;
-            gap: 20px; 
-            flex-wrap: wrap; 
-        }
-        .action-buttons a {
-            background-color: var(--primary-blue); 
-            color: var(--white-background);
-            padding: 15px 30px;
-            text-decoration: none;
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            font-weight: 600; 
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-decoration: none; /* Remove underline from links styled as buttons */
+            margin: 0.5rem; /* Space out buttons */
         }
-        .action-buttons a:hover {
-            background-color: var(--darker-blue); 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
         }
-        footer {
-            margin-top: auto; 
-            padding: 20px;
-            text-align: center;
-            color: var(--medium-text);
-            font-size: 0.9em;
-            background-color: var(--white-background); 
-            border-top: 1px solid var(--border-light);
-            font-weight: 400;
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
         }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            h1 { font-size: 2.2em; gap: 10px; }
-            h1 .header-icon { width: 60px; margin-right: 5px; } 
-            .container { margin: 20px auto; padding: 20px; }
-            .security-focus { padding: 15px; margin: 20px auto; }
-            .security-focus h2 { font-size: 1.5em; }
-            .action-buttons { flex-direction: column; gap: 15px; }
-            .feature-item { width: 140px; } 
-            .feature-item .feature-icon { font-size: 2.5em; padding: 10px; } 
-            .feature-item p { font-size: 0.85em; }
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(107, 114, 128, 0.3);
+        }
+        .btn-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(107, 114, 128, 0.2);
         }
     </style>
 </head>
 <body>
-    {% include 'base_navbar.html' %} 
+    {# The base_navbar.html is included here. If it contains navigation links,
+       you might want to adjust it separately or ensure it only shows
+       login/register for unauthenticated users. #}
+    {% include 'base_navbar.html' %}
 
     <div class="container">
-        <h1>
-            <img src="{{ url_for('static', filename='Icon For Project .jpg') }}" 
-                 alt="Wi-Fi Icon" 
-                 class="header-icon"
-                 onerror="this.onerror=null; this.src='https://placehold.co/80x80/4285F4/FFFFFF?text=Icon';"> {# Fallback if image fails #}
-            Device Manager
-        </h1>
-        <p>
-            This app helps you keep track of all devices on your Wi-Fi network.
-            It can scan for new devices or devices that are connected but not yet on your approved list.
+        <h1 class="text-4xl font-bold text-gray-900 mb-6">Welcome to Your Network Security Dashboard</h1>
+        <p class="text-lg text-gray-700 mb-8">
+            Please log in or register to access your network management tools.
         </p>
-        
-        <div class="security-focus">
-            <h2>Keeping your Home Network Safe!</h2> 
-            <div class="security-features">
-                <div class="feature-item">
-                    <i class="fas fa-search feature-icon"></i> {# Font Awesome Icon #}
-                    <p>Quickly scan your Wi-Fi for all connected devices.</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-question-circle feature-icon"></i> {# Font Awesome Icon #}
-                    <p>Easily spot any new or unknown devices on your network.</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt feature-icon"></i> {# Font Awesome Icon #}
-                    <p>Keep your home network secure by managing who's connected.</p>
-                </div>
-            </div>
-            <p>Click the "Network Scan" button below or in the navigation bar to check your network now!</p>
-        </div>
 
-        <p>Use the buttons below to navigate the application:</p>
-
-        <div class="action-buttons">
-            <a href="{{ url_for('login') }}">Login to Manage Devices</a> 
-            <a href="{{ url_for('register_user') }}">Create Account</a> 
+        <div class="flex flex-wrap justify-center gap-4 mt-8">
+            <a href="{{ url_for('register_user') }}" class="btn btn-primary">Register New User</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; 2025 Device Manager. All rights reserved.</p> 
-    </footer>
 </body>
 </html>

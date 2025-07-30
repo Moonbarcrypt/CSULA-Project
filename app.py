@@ -180,7 +180,7 @@ def device_list_page():
                            whitelisted_devices=whitelisted_devices,
                            watchlist_devices=watchlist_devices)
 
-@app.route('/register', methods=['GET', 'POST']) # This route name remains 'register'
+@app.route('/register', methods=['GET', 'POST']) 
 @login_required 
 def register():
     """Handles device registration, automatically whitelisting new devices for the current user."""
@@ -197,7 +197,7 @@ def register():
         
         if mac_address and not is_valid_mac(mac_address):
             flash('Invalid MAC address format. Please use AA:BB:CC:DD:EE:FF or AA-BB-CC-DD-EE-FF.', 'error')
-            return render_template('register_device.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type) # Changed to register_device.html
+            return render_template('register_device.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type) 
 
         if mac_address is None:
             def generate_random_mac():
@@ -209,7 +209,7 @@ def register():
 
         if Device.query.filter_by(user_id=current_user.id, mac_address=mac_address).first():
             flash('A device with this MAC address is already registered by you.', 'error')
-            return render_template('register_device.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type) # Changed to register_device.html
+            return render_template('register_device.html', mac_address_prefill=mac_address, user_name=user_name, device_name=device_name, device_type=device_type) 
         
         new_device = Device(user_id=current_user.id, user_name=user_name, device_name=device_name, 
                             mac_address=mac_address, is_whitelisted=True, 
@@ -221,7 +221,7 @@ def register():
         flash('Device registered successfully and added to Network Devices!', 'success')
         return redirect(url_for('device_list_page'))
     
-    return render_template('register_device.html', mac_address_prefill=mac_address_prefill) # Changed to register_device.html
+    return render_template('register_device.html', mac_address_prefill=mac_address_prefill) 
 
 @app.route('/edit_device/<int:device_id>', methods=['GET', 'POST'])
 @login_required 
@@ -366,6 +366,17 @@ def alerts_page():
     """Displays a list of alerts for the current user."""
     all_alerts = Alert.query.filter_by(user_id=current_user.id).order_by(Alert.timestamp.desc()).all()
     return render_template('alerts.html', alerts=all_alerts)
+
+# THIS IS THE MISSING ROUTE
+@app.route('/mark_alert_read/<int:alert_id>', methods=['POST'])
+@login_required
+def mark_alert_read(alert_id):
+    """Marks a specific alert as read for the current user."""
+    alert = Alert.query.filter_by(id=alert_id, user_id=current_user.id).first_or_404()
+    alert.is_read = True
+    db.session.commit()
+    flash('Alert marked as read.', 'info')
+    return redirect(url_for('alerts_page'))
 
 @app.context_processor
 def inject_unread_alerts_count():
